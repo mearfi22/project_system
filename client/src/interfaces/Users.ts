@@ -1,4 +1,5 @@
 import { Genders } from "./Genders";
+import { Roles } from "./Roles";
 
 export interface Users {
   user_id: number;
@@ -9,6 +10,7 @@ export interface Users {
   age: number;
   birth_date: string;
   gender: Genders;
+  role: Roles;
   address: string;
   contact_number: string;
   email: string;

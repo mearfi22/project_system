@@ -102,12 +102,12 @@ const DeleteUserForm = ({
           <div className="d-flex justify-content-center">
             <div className="col-md-6">
               <div className="mb-3">
-                <label htmlFor="full_name">Full Name</label>
+                <label htmlFor="delete-full_name">Full Name</label>
                 <input
                   type="text"
                   className="form-control"
                   name="full_name"
-                  id="full_name"
+                  id="delete-full_name"
                   value={state.full_name}
                   readOnly
                 />

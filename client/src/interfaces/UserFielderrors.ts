@@ -5,6 +5,7 @@ export interface UserFieldErrors {
   suffix_name?: string[];
   birth_date?: string[];
   gender?: string[];
+  role?: string[];
   address?: string[];
   contact_number?: string[];
   email?: string[];

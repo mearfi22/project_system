@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function loadUsers()
     {
-        $users = User::with(['gender'])
+        $users = User::with(['gender', 'role'])
             ->where('tbl_users.is_deleted', false)
             ->get();
 
@@ -29,6 +29,7 @@ class UserController extends Controller
             'suffix_name' => ['nullable'],
             'birth_date' => ['required', 'date'],
             'gender' => ['required'],
+            'role' => ['required'],
             'address' => ['required'],
             'contact_number' => ['required'],
             'email' => ['required', 'email', Rule::unique('tbl_users', 'email')],
@@ -46,6 +47,7 @@ class UserController extends Controller
             'age' => $age,
             'birth_date' => $validated['birth_date'],
             'gender_id' => $validated['gender'],
+            'role_id' => $validated['role'],
             'address' => $validated['address'],
             'contact_number' => $validated['contact_number'],
             'email' => $validated['email'],
@@ -59,21 +61,30 @@ class UserController extends Controller
 
     public function updateUser(Request $request, User $user)
     {
-        $validated = $request->validate([
+        $validationRules = [
             'first_name' => ['required'],
             'middle_name' => ['nullable'],
             'last_name' => ['required'],
             'suffix_name' => ['nullable'],
             'birth_date' => ['required', 'date'],
             'gender' => ['required'],
+            'role' => ['required'],
             'address' => ['required'],
             'contact_number' => ['required'],
             'email' => ['required', 'email', Rule::unique('tbl_users', 'email')->ignore($user)],
-        ]);
+        ];
+
+        // Only validate password if it's provided
+        if ($request->filled('password')) {
+            $validationRules['password'] = ['required', 'confirmed', 'min:8', 'max:15'];
+            $validationRules['password_confirmation'] = ['required', 'min:8', 'max:15'];
+        }
+
+        $validated = $request->validate($validationRules);
 
         $age = date_diff(date_create($validated['birth_date']), date_create('now'))->y;
 
-        $user->update([
+        $userData = [
             'first_name' => $validated['first_name'],
             'middle_name' => $validated['middle_name'],
             'last_name' => $validated['last_name'],
@@ -81,10 +92,18 @@ class UserController extends Controller
             'age' => $age,
             'birth_date' => $validated['birth_date'],
             'gender_id' => $validated['gender'],
+            'role_id' => $validated['role'],
             'address' => $validated['address'],
             'contact_number' => $validated['contact_number'],
             'email' => $validated['email'],
-        ]);
+        ];
+
+        // Only update password if it's provided
+        if ($request->filled('password')) {
+            $userData['password'] = bcrypt($validated['password']);
+        }
+
+        $user->update($userData);
 
         return response()->json([
             'message' => 'User Successfully Updated.'

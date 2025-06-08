@@ -1,15 +1,20 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Login from "./pages/login/login";
+import Login from "./pages/login/Login";
 import ProtectedRoute from "./components/ProtectedRoutes";
 import Dashboard from "./pages/dashboard/Dashboard";
 import POS from "./pages/pos/POS";
-import Products from "./pages/products/Products";
+import Products from "./pages/Products";
 import Inventory from "./pages/inventory/Inventory";
 import Transactions from "./pages/transactions/Transactions";
 import Reports from "./pages/reports/Reports";
 import Users from "./pages/user/Users";
 import Settings from "./pages/settings/Settings";
 import Layout from "./components/Layout";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useEffect } from "react";
+import axios from "axios";
+import { CartProvider } from "./contexts/CartContext";
 
 const router = createBrowserRouter([
   {
@@ -99,7 +104,19 @@ const router = createBrowserRouter([
 ]);
 
 const App = () => {
-  return <RouterProvider router={router} />;
+  useEffect(() => {
+    // Get CSRF cookie from Laravel
+    axios.get("http://localhost:8000/sanctum/csrf-cookie", {
+      withCredentials: true,
+    });
+  }, []);
+
+  return (
+    <CartProvider>
+      <RouterProvider router={router} />
+      <ToastContainer />
+    </CartProvider>
+  );
 };
 
 export default App;

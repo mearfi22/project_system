@@ -1,136 +1,199 @@
-import { useState } from "react";
-
-interface InventoryItem {
-  id: number;
-  name: string;
-  quantity: number;
-  reorderPoint: number;
-  lastRestocked: string;
-  status: "In Stock" | "Low Stock" | "Out of Stock";
-}
+import React, { useEffect, useState } from "react";
+import { Products as ProductInterface } from "../../interfaces/Products";
+import { StockMovement } from "../../interfaces/Inventory";
+import ProductService from "../../services/ProductService";
+import InventoryService from "../../services/InventoryService";
+import ErrorHandler from "../../handler/ErrorHandler";
+import { toast } from "react-toastify";
+import StockAdjustmentModal from "../../components/modals/inventory/StockAdjustmentModal";
 
 const Inventory = () => {
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [products, setProducts] = useState<ProductInterface[]>([]);
+  const [movements, setMovements] = useState<StockMovement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdjustModal, setShowAdjustModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductInterface | null>(null);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = () => {
+    setLoading(true);
+    Promise.all([
+      ProductService.loadProducts(),
+      InventoryService.getStockMovements(),
+    ])
+      .then(([productsRes, movementsRes]) => {
+        setProducts(productsRes.data.products);
+        setMovements(movementsRes.data.movements);
+      })
+      .catch((error) => {
+        ErrorHandler(error, null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const handleStockAdjusted = (message: string) => {
+    setShowAdjustModal(false);
+    setSelectedProduct(null);
+    loadData();
+    toast.success(message);
+  };
+
+  const handleAdjustStock = (product: ProductInterface) => {
+    setSelectedProduct(product);
+    setShowAdjustModal(true);
+  };
 
   return (
-    <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Inventory Management</h1>
-        <div>
-          <button className="btn btn-success me-2">Stock In</button>
-          <button className="btn btn-warning">Stock Out</button>
-        </div>
-      </div>
-
+    <div className="container-fluid">
       <div className="row mb-4">
-        <div className="col-md-4">
-          <div className="card bg-primary text-white">
-            <div className="card-body">
-              <h5 className="card-title">Total Items</h5>
-              <p className="display-6">0</p>
-            </div>
-          </div>
+        <div className="col-md-6">
+          <h1>Inventory Management</h1>
         </div>
-        <div className="col-md-4">
-          <div className="card bg-warning text-white">
-            <div className="card-body">
-              <h5 className="card-title">Low Stock Items</h5>
-              <p className="display-6">0</p>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-4">
-          <div className="card bg-danger text-white">
-            <div className="card-body">
-              <h5 className="card-title">Out of Stock Items</h5>
-              <p className="display-6">0</p>
-            </div>
-          </div>
+        <div className="col-md-6 text-end">
+          <button
+            type="button"
+            className="btn btn-warning me-2"
+            onClick={() => {
+              InventoryService.getLowStockProducts()
+                .then((res) => {
+                  const lowStockCount = res.data.products.length;
+                  toast.warning(
+                    `${lowStockCount} product${
+                      lowStockCount === 1 ? " is" : "s are"
+                    } low on stock!`
+                  );
+                })
+                .catch((error) => {
+                  ErrorHandler(error, null);
+                });
+            }}
+          >
+            Check Low Stock
+          </button>
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-body">
-          <div className="row mb-3">
-            <div className="col-md-8">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Search inventory..."
-              />
-            </div>
-            <div className="col-md-4">
-              <select className="form-select">
-                <option value="">All Status</option>
-                <option value="in_stock">In Stock</option>
-                <option value="low_stock">Low Stock</option>
-                <option value="out_of_stock">Out of Stock</option>
-              </select>
+      {loading ? (
+        <div className="text-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      ) : (
+        <div className="row">
+          <div className="col-md-8">
+            <div className="card">
+              <div className="card-header">
+                <h5 className="card-title mb-0">Stock Movements</h5>
+              </div>
+              <div className="card-body">
+                <div className="table-responsive">
+                  <table className="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Product</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        <th>Reference</th>
+                        <th>Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {movements.map((movement) => (
+                        <tr key={movement.id}>
+                          <td>
+                            {new Date(movement.created_at).toLocaleDateString()}
+                          </td>
+                          <td>{movement.product?.name}</td>
+                          <td>
+                            <span
+                              className={`badge ${
+                                movement.type === "in"
+                                  ? "bg-success"
+                                  : "bg-danger"
+                              }`}
+                            >
+                              {movement.type.toUpperCase()}
+                            </span>
+                          </td>
+                          <td>{movement.quantity}</td>
+                          <td>{movement.reference}</td>
+                          <td>{movement.notes || "-"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="table-responsive">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Quantity</th>
-                  <th>Reorder Point</th>
-                  <th>Last Restocked</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={7} className="text-center">
-                      Loading...
-                    </td>
-                  </tr>
-                ) : inventory.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="text-center">
-                      No inventory items found
-                    </td>
-                  </tr>
-                ) : (
-                  inventory.map((item) => (
-                    <tr key={item.id}>
-                      <td>{item.id}</td>
-                      <td>{item.name}</td>
-                      <td>{item.quantity}</td>
-                      <td>{item.reorderPoint}</td>
-                      <td>{item.lastRestocked}</td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            item.status === "In Stock"
-                              ? "bg-success"
-                              : item.status === "Low Stock"
-                              ? "bg-warning"
-                              : "bg-danger"
-                          }`}
-                        >
-                          {item.status}
-                        </span>
-                      </td>
-                      <td>
-                        <button className="btn btn-sm btn-primary me-2">
-                          Adjust Stock
-                        </button>
-                        <button className="btn btn-sm btn-info">History</button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          <div className="col-md-4">
+            <div className="card">
+              <div className="card-header">
+                <h5 className="card-title mb-0">Current Stock</h5>
+              </div>
+              <div className="card-body">
+                <div className="table-responsive">
+                  <table className="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Stock</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {products.map((product) => (
+                        <tr key={product.id}>
+                          <td>{product.name}</td>
+                          <td>
+                            {product.stock_quantity}
+                            {product.stock_quantity <=
+                              product.alert_threshold && (
+                              <span className="badge bg-warning ms-2">
+                                Low Stock
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-primary"
+                              onClick={() => handleAdjustStock(product)}
+                            >
+                              Adjust
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {selectedProduct && (
+        <StockAdjustmentModal
+          show={showAdjustModal}
+          onHide={() => {
+            setShowAdjustModal(false);
+            setSelectedProduct(null);
+          }}
+          product={selectedProduct}
+          onStockAdjusted={handleStockAdjusted}
+        />
+      )}
     </div>
   );
 };

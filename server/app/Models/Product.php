@@ -24,6 +24,8 @@ class Product extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'stock_quantity' => 'integer',
+        'alert_threshold' => 'integer',
         'active' => 'boolean',
     ];
 
@@ -45,5 +47,10 @@ class Product extends Model
             $this->stock_quantity -= $quantity;
         }
         $this->save();
+    }
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class);
     }
 }
