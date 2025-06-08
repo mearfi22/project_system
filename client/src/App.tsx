@@ -1,0 +1,105 @@
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Login from "./pages/login/login";
+import ProtectedRoute from "./components/ProtectedRoutes";
+import Dashboard from "./pages/dashboard/Dashboard";
+import POS from "./pages/pos/POS";
+import Products from "./pages/products/Products";
+import Inventory from "./pages/inventory/Inventory";
+import Transactions from "./pages/transactions/Transactions";
+import Reports from "./pages/reports/Reports";
+import Users from "./pages/user/Users";
+import Settings from "./pages/settings/Settings";
+import Layout from "./components/Layout";
+
+const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/",
+    element: (
+      <ProtectedRoute>
+        <Layout>
+          <Dashboard />
+        </Layout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/pos",
+    element: (
+      <ProtectedRoute allowedRoles={["admin", "manager", "cashier"]}>
+        <Layout>
+          <POS />
+        </Layout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/products",
+    element: (
+      <ProtectedRoute allowedRoles={["admin", "manager"]}>
+        <Layout>
+          <Products />
+        </Layout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/inventory",
+    element: (
+      <ProtectedRoute allowedRoles={["admin", "manager"]}>
+        <Layout>
+          <Inventory />
+        </Layout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/transactions",
+    element: (
+      <ProtectedRoute allowedRoles={["admin", "manager", "cashier"]}>
+        <Layout>
+          <Transactions />
+        </Layout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/reports",
+    element: (
+      <ProtectedRoute allowedRoles={["admin", "manager"]}>
+        <Layout>
+          <Reports />
+        </Layout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/users",
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <Layout>
+          <Users />
+        </Layout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/settings",
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <Layout>
+          <Settings />
+        </Layout>
+      </ProtectedRoute>
+    ),
+  },
+]);
+
+const App = () => {
+  return <RouterProvider router={router} />;
+};
+
+export default App;
