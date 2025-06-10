@@ -313,10 +313,10 @@ const Inventory = () => {
                             <td>
                               <button
                                 type="button"
-                                className="btn btn-sm btn-outline-primary"
+                                className="btn btn-sm btn-primary"
                                 onClick={() => handleAdjustStock(product)}
                               >
-                                <i className="bi bi-pencil"></i>
+                                Adjust Stock
                               </button>
                             </td>
                           </tr>
