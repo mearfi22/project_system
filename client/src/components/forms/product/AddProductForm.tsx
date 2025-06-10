@@ -14,7 +14,6 @@ interface ProductFieldErrors {
   price?: string[];
   stock_quantity?: string[];
   alert_threshold?: string[];
-  sku?: string[];
   barcode?: string[];
   category?: string[];
   active?: string[];
@@ -31,7 +30,6 @@ const AddProductForm = ({
     price: "",
     stock_quantity: "",
     alert_threshold: "10", // Default value
-    sku: "",
     barcode: "",
     category: "",
     active: true,
@@ -96,7 +94,6 @@ const AddProductForm = ({
       price: "",
       stock_quantity: "",
       alert_threshold: "10",
-      sku: "",
       barcode: "",
       category: "",
       active: true,
@@ -213,23 +210,6 @@ const AddProductForm = ({
                 <span className="text-danger">
                   {state.errors.alert_threshold[0]}
                 </span>
-              )}
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="add-sku">SKU</label>
-              <input
-                type="text"
-                className={`form-control ${
-                  state.errors.sku ? "is-invalid" : ""
-                }`}
-                name="sku"
-                id="add-sku"
-                value={state.sku}
-                onChange={handleInputChange}
-              />
-              {state.errors.sku && (
-                <span className="text-danger">{state.errors.sku[0]}</span>
               )}
             </div>
 

@@ -16,7 +16,6 @@ class Product extends Model
         'price',
         'stock_quantity',
         'alert_threshold',
-        'sku',
         'barcode',
         'category',
         'active'
@@ -28,6 +27,18 @@ class Product extends Model
         'alert_threshold' => 'integer',
         'active' => 'boolean',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($product) {
+            // If stock quantity is 0 or less, set active to false
+            if ($product->stock_quantity <= 0) {
+                $product->active = false;
+            }
+        });
+    }
 
     public function transactionItems()
     {
@@ -46,6 +57,13 @@ class Product extends Model
         } else {
             $this->stock_quantity -= $quantity;
         }
+
+        // If stock becomes 0 or negative, set active to false
+        if ($this->stock_quantity <= 0) {
+            $this->active = false;
+            $this->stock_quantity = 0; // Prevent negative stock
+        }
+
         $this->save();
     }
 

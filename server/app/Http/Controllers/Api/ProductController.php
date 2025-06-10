@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -20,61 +21,97 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:products',
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock_quantity' => 'required|integer|min:0',
             'alert_threshold' => 'required|integer|min:0',
-            'sku' => 'required|string|max:50|unique:products',
             'barcode' => 'nullable|string|max:50|unique:products',
-            'category' => 'required|string|max:50',
+            'category' => 'nullable|string|max:50',
             'active' => 'boolean'
         ]);
 
-        $product = Product::create($validated);
-
+        $product = Product::create($validatedData);
         return response()->json([
             'message' => 'Product created successfully',
             'product' => $product
         ], 201);
     }
 
-    public function show($id)
+    public function show(Product $product)
     {
-        $product = Product::findOrFail($id);
         return response()->json([
             'product' => $product
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Product $product)
     {
-        $product = Product::findOrFail($id);
+        try {
+            Log::info('Updating product', [
+                'product_id' => $product->id,
+                'request_data' => $request->all()
+            ]);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('products')->ignore($product->id)],
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'stock_quantity' => 'required|integer|min:0',
-            'alert_threshold' => 'required|integer|min:0',
-            'sku' => ['required', 'string', 'max:50', Rule::unique('products')->ignore($product->id)],
-            'barcode' => ['nullable', 'string', 'max:50', Rule::unique('products')->ignore($product->id)],
-            'category' => 'required|string|max:50',
-            'active' => 'boolean'
-        ]);
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric|min:0',
+                'stock_quantity' => 'required|integer|min:0',
+                'alert_threshold' => 'required|integer|min:0',
+                'barcode' => ['nullable', 'string', 'max:50', Rule::unique('products')->ignore($product->id)],
+                'category' => 'nullable|string|max:50',
+                'active' => 'boolean'
+            ]);
 
-        $product->update($validated);
+            // If stock quantity is 0, force active to false
+            if ($validatedData['stock_quantity'] <= 0) {
+                $validatedData['active'] = false;
+                $validatedData['stock_quantity'] = 0; // Prevent negative stock
+            }
 
-        return response()->json([
-            'message' => 'Product updated successfully',
-            'product' => $product
-        ]);
+            Log::info('Validated data', [
+                'product_id' => $product->id,
+                'validated_data' => $validatedData
+            ]);
+
+            $product->update($validatedData);
+
+            Log::info('Product updated successfully', [
+                'product_id' => $product->id,
+                'updated_data' => $product->toArray()
+            ]);
+
+            return response()->json([
+                'message' => 'Product updated successfully',
+                'product' => $product
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Validation failed while updating product', [
+                'product_id' => $product->id,
+                'errors' => $e->errors()
+            ]);
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating product', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to update product',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function destroy($id)
+    public function destroy(Product $product)
     {
-        $product = Product::findOrFail($id);
         $product->delete();
 
         return response()->json([
@@ -90,6 +127,15 @@ class ProductController extends Controller
 
         return response()->json([
             'products' => $lowStockProducts
+        ]);
+    }
+
+    public function getDeleted()
+    {
+        $deletedProducts = Product::onlyTrashed()->get();
+
+        return response()->json([
+            'products' => $deletedProducts
         ]);
     }
 

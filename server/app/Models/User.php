@@ -11,7 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasApiTokens, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'tbl_users';
     protected $primaryKey = 'user_id';
@@ -39,6 +39,19 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    protected $appends = ['name'];
+
+    public function getNameAttribute()
+    {
+        $name_parts = array_filter([
+            $this->first_name,
+            $this->middle_name ? substr($this->middle_name, 0, 1) . '.' : null,
+            $this->last_name,
+            $this->suffix_name
+        ]);
+        return implode(' ', $name_parts);
+    }
 
     public function gender(): BelongsTo
     {

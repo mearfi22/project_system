@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
   createContext,
   ReactNode,
@@ -6,6 +5,7 @@ import {
   useState,
   useEffect,
 } from "react";
+import AxiosInstance from "../utils/AxiosInstance";
 
 interface User {
   id: number;
@@ -14,115 +14,164 @@ interface User {
   last_name: string;
   email: string;
   role: {
-    id: number;
     name: string;
+    permissions: string[];
   };
 }
 
 interface AuthContextProps {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (
+    email: string,
+    password: string,
+    recaptchaToken: string
+  ) => Promise<void>;
   logout: () => Promise<void>;
   isLoggedIn: boolean;
   hasRole: (roles: string[]) => boolean;
+  hasPermission: (permission: string) => boolean;
   userRole: string;
+  setLastPath: (path: string) => void;
+  lastPath: string;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
-
-// Configure axios defaults
-const API_URL = "http://localhost:8000";
-axios.defaults.withCredentials = true;
-axios.defaults.baseURL = API_URL;
-axios.defaults.headers.common["Accept"] = "application/json";
-axios.defaults.headers.common["Content-Type"] = "application/json";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("token")
   );
+  const [lastPath, setLastPath] = useState<string>("/");
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Initialize user from localStorage if available
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const initializeAuth = async () => {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+        try {
+          // Set token in axios headers
+          AxiosInstance.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${storedToken}`;
 
-    // Set axios authorization header if token exists
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    }
-  }, [token]);
+          // Debug logging
+          console.log("Initializing auth with token:", storedToken);
+          console.log(
+            "Authorization header:",
+            AxiosInstance.defaults.headers.common["Authorization"]
+          );
 
-  const login = async (email: string, password: string) => {
+          const response = await AxiosInstance.get("/api/user");
+          console.log("User data loaded:", response.data);
+          setUser(response.data);
+          setToken(storedToken);
+        } catch (error) {
+          console.error("Auth check failed:", error);
+          // Clear invalid token
+          localStorage.removeItem("token");
+          setToken(null);
+          setUser(null);
+        }
+      }
+      setIsInitialized(true);
+    };
+
+    initializeAuth();
+  }, []);
+
+  const login = async (
+    email: string,
+    password: string,
+    recaptchaToken: string
+  ) => {
     try {
-      // Get CSRF cookie first
-      await axios.get("/sanctum/csrf-cookie");
-
-      const response = await axios.post("/api/login", {
+      const response = await AxiosInstance.post("/api/login", {
         email,
         password,
+        recaptcha_token: recaptchaToken,
       });
 
-      const { token, user } = response.data;
-      setToken(token);
-      setUser(user);
+      const { token: newToken, user: userData } = response.data;
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      // Debug logging
+      console.log("Login successful - Token:", newToken);
+      console.log("User data:", userData);
 
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    } catch (error: any) {
-      console.error("Login error:", error.response?.data || error.message);
+      // Save token to localStorage
+      localStorage.setItem("token", newToken);
+
+      // Set token in axios headers
+      AxiosInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${newToken}`;
+
+      // Debug logging
+      console.log(
+        "Authorization header set:",
+        AxiosInstance.defaults.headers.common["Authorization"]
+      );
+
+      setToken(newToken);
+      setUser(userData);
+
+      return response.data;
+    } catch (error) {
+      console.error("Login failed:", error);
       throw error;
     }
   };
 
   const logout = async () => {
     try {
-      if (token) {
-        await axios.post(
-          "/api/logout",
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-      }
-      setToken(null);
-      setUser(null);
-
+      await AxiosInstance.post("/api/logout");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Continue with cleanup even if the API call fails
+    } finally {
+      // Clear token from localStorage
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-
-      delete axios.defaults.headers.common["Authorization"];
-    } catch (error: any) {
-      console.error("Logout error:", error.response?.data || error.message);
-      // Still clear the local state even if the server request fails
+      // Remove token from axios headers
+      delete AxiosInstance.defaults.headers.common["Authorization"];
       setToken(null);
       setUser(null);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      delete axios.defaults.headers.common["Authorization"];
+      // Redirect to login page
+      window.location.href = "/login";
     }
   };
 
   const hasRole = (roles: string[]): boolean => {
-    if (!user || !user.role) return false;
-    return roles.includes(user.role.name.toLowerCase());
+    return Boolean(user?.role && roles.includes(user.role.name));
+  };
+
+  const hasPermission = (permission: string): boolean => {
+    return Boolean(user?.role?.permissions?.includes(permission));
   };
 
   const userRole = user?.role?.name || "";
-  const isLoggedIn = !!token;
+
+  const isLoggedIn = Boolean(user && token);
+
+  if (!isInitialized) {
+    return null; // or a loading spinner
+  }
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, isLoggedIn, hasRole, userRole }}
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        isLoggedIn,
+        hasRole,
+        hasPermission,
+        userRole,
+        setLastPath,
+        lastPath,
+      }}
     >
       {children}
     </AuthContext.Provider>
@@ -131,10 +180,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
-
   return context;
 };

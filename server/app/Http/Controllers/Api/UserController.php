@@ -33,8 +33,14 @@ class UserController extends Controller
             'address' => ['required'],
             'contact_number' => ['required'],
             'email' => ['required', 'email', Rule::unique('tbl_users', 'email')],
-            'password' => ['required', 'confirmed', 'min:8', 'max:15'],
-            'password_confirmation' => ['required', 'min:8', 'max:15'],
+            'password' => [
+                'required',
+                'confirmed',
+                'min:8',
+                'max:32',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
+            ],
+            'password_confirmation' => ['required'],
         ]);
 
         $age = date_diff(date_create($validated['birth_date']), date_create('now'))->y;
@@ -76,8 +82,14 @@ class UserController extends Controller
 
         // Only validate password if it's provided
         if ($request->filled('password')) {
-            $validationRules['password'] = ['required', 'confirmed', 'min:8', 'max:15'];
-            $validationRules['password_confirmation'] = ['required', 'min:8', 'max:15'];
+            $validationRules['password'] = [
+                'required',
+                'confirmed',
+                'min:8',
+                'max:32',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
+            ];
+            $validationRules['password_confirmation'] = ['required'];
         }
 
         $validated = $request->validate($validationRules);

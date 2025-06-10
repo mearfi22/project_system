@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../contexts/AuthContext";
 import { Product } from "../../types/Product";
 import { CartItem } from "../../types/CartItem";
 import ProductList from "./ProductList";
 import Cart from "./Cart";
-import PaymentModal from "./PaymentModal";
+import PaymentModal from "../modals/pos/PaymentModal";
 import { toast } from "react-toastify";
-import axios from "axios";
+import ProductService from "../../services/ProductService";
 
 const POS: React.FC = () => {
   const { user } = useAuth();
@@ -21,7 +21,7 @@ const POS: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get("/api/products");
+      const response = await ProductService.loadProducts();
       setProducts(response.data);
       setLoading(false);
     } catch (error) {
@@ -79,9 +79,18 @@ const POS: React.FC = () => {
     );
   };
 
+  const updateDiscount = (productId: number, discount: number) => {
+    setCart(
+      cart.map((item) =>
+        item.product.id === productId ? { ...item, discount } : item
+      )
+    );
+  };
+
   const calculateTotal = () => {
     return cart.reduce(
-      (total, item) => total + item.product.price * item.quantity,
+      (total, item) =>
+        total + (item.product.price * item.quantity - (item.discount || 0)),
       0
     );
   };
@@ -94,29 +103,11 @@ const POS: React.FC = () => {
     setIsPaymentModalOpen(true);
   };
 
-  const handlePaymentComplete = async (paymentDetails: any) => {
-    try {
-      const transaction = {
-        items: cart.map((item) => ({
-          product_id: item.product.id,
-          quantity: item.quantity,
-        })),
-        payment_method: paymentDetails.method,
-        customer_name: paymentDetails.customerName,
-        customer_email: paymentDetails.customerEmail,
-        discount_amount: paymentDetails.discount || 0,
-        tax_amount: paymentDetails.tax || 0,
-        notes: paymentDetails.notes,
-      };
-
-      await axios.post("/api/transactions", transaction);
-      toast.success("Transaction completed successfully");
-      setCart([]);
-      setIsPaymentModalOpen(false);
-      fetchProducts(); // Refresh product list to update stock
-    } catch (error) {
-      toast.error("Failed to process transaction");
-    }
+  const handlePaymentComplete = () => {
+    setCart([]);
+    setIsPaymentModalOpen(false);
+    fetchProducts(); // Refresh products to get updated stock
+    toast.success("Payment completed successfully");
   };
 
   if (loading) {
@@ -129,25 +120,26 @@ const POS: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-4">
         <ProductList products={products} onAddToCart={addToCart} />
       </div>
-      <div className="w-1/3 bg-white p-6 shadow-lg">
+      <div className="w-1/3 bg-white p-4 shadow-lg">
         <Cart
           items={cart}
           onUpdateQuantity={updateQuantity}
           onRemoveItem={removeFromCart}
-          total={calculateTotal()}
           onCheckout={handleCheckout}
-          canApplyDiscount={user?.isManager() || user?.isAdmin()}
+          total={calculateTotal()}
+          onUpdateDiscount={updateDiscount}
+          canApplyDiscount={true}
         />
       </div>
       <PaymentModal
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        onComplete={handlePaymentComplete}
+        show={isPaymentModalOpen}
+        onHide={() => setIsPaymentModalOpen(false)}
         total={calculateTotal()}
-        canApplyDiscount={user?.isManager() || user?.isAdmin()}
+        items={cart}
+        onPaymentComplete={handlePaymentComplete}
       />
     </div>
   );

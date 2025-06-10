@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import { Dialog } from "@headlessui/react";
-
-interface PaymentModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onComplete: (paymentDetails: PaymentDetails) => void;
-  total: number;
-  canApplyDiscount: boolean;
-}
+import { useCart } from "../../contexts/CartContext";
 
 interface PaymentDetails {
   method: string;
@@ -18,6 +11,14 @@ interface PaymentDetails {
   notes: string;
 }
 
+interface PaymentModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onComplete: (details: PaymentDetails) => void;
+  total: number;
+  canApplyDiscount?: boolean;
+}
+
 const PaymentModal: React.FC<PaymentModalProps> = ({
   isOpen,
   onClose,
@@ -25,11 +26,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   total,
   canApplyDiscount,
 }) => {
+  const { tax } = useCart();
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [discount, setDiscount] = useState(0);
-  const [tax, setTax] = useState(0);
   const [notes, setNotes] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -54,7 +55,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     >
       <div className="min-h-screen px-4 text-center">
         <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-
         <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
           <Dialog.Title
             as="h3"
@@ -63,8 +63,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             Complete Payment
           </Dialog.Title>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Payment Method
               </label>
@@ -79,95 +79,83 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               </select>
             </div>
 
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Customer Name
+                Customer Name (Optional)
               </label>
               <input
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 className="w-full p-2 border rounded"
-                placeholder="Optional"
+                placeholder="Enter customer name"
               />
             </div>
 
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Customer Email
+                Customer Email (Optional)
               </label>
               <input
                 type="email"
                 value={customerEmail}
                 onChange={(e) => setCustomerEmail(e.target.value)}
                 className="w-full p-2 border rounded"
-                placeholder="For receipt (optional)"
+                placeholder="Enter customer email"
               />
             </div>
 
             {canApplyDiscount && (
-              <div>
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Discount Amount
                 </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={discount}
-                  onChange={(e) => setDiscount(Number(e.target.value))}
-                  className="w-full p-2 border rounded"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-2">₱</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={discount}
+                    onChange={(e) => setDiscount(Number(e.target.value))}
+                    className="w-full p-2 pl-8 border rounded"
+                    placeholder="0.00"
+                  />
+                </div>
               </div>
             )}
 
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tax Amount
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={tax}
-                onChange={(e) => setTax(Number(e.target.value))}
-                className="w-full p-2 border rounded"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Notes
+                Notes (Optional)
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full p-2 border rounded"
                 rows={3}
-                placeholder="Optional notes"
+                placeholder="Add any notes here..."
               />
             </div>
 
-            <div className="bg-gray-50 p-4 rounded">
+            <div className="mt-4 p-4 bg-gray-50 rounded">
               <div className="flex justify-between mb-2">
                 <span>Subtotal:</span>
-                <span>${total.toFixed(2)}</span>
+                <span>₱{total.toFixed(2)}</span>
               </div>
               {discount > 0 && (
                 <div className="flex justify-between mb-2 text-green-600">
                   <span>Discount:</span>
-                  <span>-${discount.toFixed(2)}</span>
+                  <span>-₱{discount.toFixed(2)}</span>
                 </div>
               )}
-              {tax > 0 && (
-                <div className="flex justify-between mb-2">
-                  <span>Tax:</span>
-                  <span>${tax.toFixed(2)}</span>
-                </div>
-              )}
+              <div className="flex justify-between mb-2">
+                <span>Tax:</span>
+                <span>₱{tax.toFixed(2)}</span>
+              </div>
               <div className="flex justify-between font-bold text-lg">
                 <span>Total:</span>
-                <span>${finalTotal.toFixed(2)}</span>
+                <span>₱{finalTotal.toFixed(2)}</span>
               </div>
             </div>
 

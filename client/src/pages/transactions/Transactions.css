@@ -1,0 +1,193 @@
+/* Page Layout */
+.transactions-page {
+  padding: 1rem;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  font-size: 1.75rem;
+  margin: 0;
+  color: #2c3e50;
+}
+
+/* Filters Section */
+.filters-section {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Table Styles */
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom-width: 1px;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-block;
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.25rem;
+}
+
+.status-badge.completed {
+  background-color: #28a745;
+  color: white;
+}
+
+.status-badge.pending {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.status-badge.voided {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* Action Buttons */
+.actions-group {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+.actions-group button {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Transaction Modal */
+.transaction-modal .modal-body {
+  padding: 1.5rem;
+}
+
+.detail-group {
+  margin-bottom: 1rem;
+}
+
+.detail-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+}
+
+.detail-value {
+  font-size: 1rem;
+  margin-bottom: 0;
+  color: #2c3e50;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.items-section {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.totals-section {
+  margin-top: 1.5rem;
+}
+
+.totals-table td,
+.totals-table th {
+  padding: 0.5rem 0;
+}
+
+.total-row {
+  border-top: 2px solid #dee2e6;
+  font-size: 1.1rem;
+}
+
+/* Void Modal */
+.void-modal .modal-body {
+  padding: 1.5rem;
+}
+
+.void-details {
+  margin-top: 1.5rem;
+}
+
+.void-details h6 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-item .label {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.detail-item .value {
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+/* Loading and No Data States */
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+.no-data {
+  padding: 2rem;
+  text-align: center;
+  color: #6c757d;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .filters-section .row {
+    row-gap: 1rem;
+  }
+
+  .actions-group {
+    flex-wrap: wrap;
+  }
+
+  .table td,
+  .table th {
+    white-space: nowrap;
+  }
+}

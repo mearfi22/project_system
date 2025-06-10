@@ -12,9 +12,8 @@ import Settings from "./pages/settings/Settings";
 import Layout from "./components/Layout";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useEffect } from "react";
-import axios from "axios";
 import { CartProvider } from "./contexts/CartContext";
+import { SettingsProvider } from "./contexts/SettingsContext";
 
 const router = createBrowserRouter([
   {
@@ -34,7 +33,10 @@ const router = createBrowserRouter([
   {
     path: "/pos",
     element: (
-      <ProtectedRoute allowedRoles={["admin", "manager", "cashier"]}>
+      <ProtectedRoute
+        allowedRoles={["admin", "manager", "cashier"]}
+        requiredPermissions={["create_transaction"]}
+      >
         <Layout>
           <POS />
         </Layout>
@@ -44,7 +46,10 @@ const router = createBrowserRouter([
   {
     path: "/products",
     element: (
-      <ProtectedRoute allowedRoles={["admin", "manager"]}>
+      <ProtectedRoute
+        allowedRoles={["admin", "manager"]}
+        requiredPermissions={["view_product"]}
+      >
         <Layout>
           <Products />
         </Layout>
@@ -54,7 +59,10 @@ const router = createBrowserRouter([
   {
     path: "/inventory",
     element: (
-      <ProtectedRoute allowedRoles={["admin", "manager"]}>
+      <ProtectedRoute
+        allowedRoles={["admin", "manager"]}
+        requiredPermissions={["view_inventory"]}
+      >
         <Layout>
           <Inventory />
         </Layout>
@@ -64,7 +72,10 @@ const router = createBrowserRouter([
   {
     path: "/transactions",
     element: (
-      <ProtectedRoute allowedRoles={["admin", "manager", "cashier"]}>
+      <ProtectedRoute
+        allowedRoles={["admin", "manager", "cashier"]}
+        requiredPermissions={["view_transaction"]}
+      >
         <Layout>
           <Transactions />
         </Layout>
@@ -74,7 +85,10 @@ const router = createBrowserRouter([
   {
     path: "/reports",
     element: (
-      <ProtectedRoute allowedRoles={["admin", "manager"]}>
+      <ProtectedRoute
+        allowedRoles={["admin", "manager"]}
+        requiredPermissions={["view_reports"]}
+      >
         <Layout>
           <Reports />
         </Layout>
@@ -84,7 +98,10 @@ const router = createBrowserRouter([
   {
     path: "/users",
     element: (
-      <ProtectedRoute allowedRoles={["admin"]}>
+      <ProtectedRoute
+        allowedRoles={["admin"]}
+        requiredPermissions={["manage_users"]}
+      >
         <Layout>
           <Users />
         </Layout>
@@ -94,7 +111,10 @@ const router = createBrowserRouter([
   {
     path: "/settings",
     element: (
-      <ProtectedRoute allowedRoles={["admin"]}>
+      <ProtectedRoute
+        allowedRoles={["admin"]}
+        requiredPermissions={["manage_settings"]}
+      >
         <Layout>
           <Settings />
         </Layout>
@@ -104,18 +124,13 @@ const router = createBrowserRouter([
 ]);
 
 const App = () => {
-  useEffect(() => {
-    // Get CSRF cookie from Laravel
-    axios.get("http://localhost:8000/sanctum/csrf-cookie", {
-      withCredentials: true,
-    });
-  }, []);
-
   return (
-    <CartProvider>
-      <RouterProvider router={router} />
-      <ToastContainer />
-    </CartProvider>
+    <SettingsProvider>
+      <CartProvider>
+        <RouterProvider router={router} />
+        <ToastContainer />
+      </CartProvider>
+    </SettingsProvider>
   );
 };
 

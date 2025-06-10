@@ -12,19 +12,21 @@ class ReceiptEmail extends Mailable
     use Queueable, SerializesModels;
 
     public $transaction;
+    public $businessSettings;
 
-    public function __construct(Transaction $transaction)
+    public function __construct(Transaction $transaction, array $businessSettings)
     {
         $this->transaction = $transaction;
+        $this->businessSettings = $businessSettings;
     }
 
     public function build()
     {
-        return $this->subject('Your Purchase Receipt from ' . config('app.name'))
+        return $this->subject('Your Purchase Receipt - ' . $this->businessSettings['name'])
             ->markdown('emails.receipt', [
                 'transaction' => $this->transaction,
                 'items' => $this->transaction->items->load('product'),
-                'farewell' => $this->getFarewellMessage()
+                'business' => $this->businessSettings
             ]);
     }
 

@@ -1,8 +1,8 @@
-import axios from "axios";
+import AxiosInstance from "../AxiosInstance";
 
 const RoleService = {
   loadRoles: () => {
-    return axios.get("/api/roles");
+    return AxiosInstance.get("/api/roles");
   },
 };
 

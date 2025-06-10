@@ -1,25 +1,25 @@
-import axios from "axios";
+import AxiosInstance from "../AxiosInstance";
 import { SaleRequest } from "../interfaces/Sales";
 
 const SalesService = {
   createSale: (data: SaleRequest) => {
-    return axios.post("/api/sales", data);
+    return AxiosInstance.post("/api/sales", data);
   },
 
   getSales: () => {
-    return axios.get("/api/sales");
+    return AxiosInstance.get("/api/sales");
   },
 
   getSale: (id: number) => {
-    return axios.get(`/api/sales/${id}`);
+    return AxiosInstance.get(`/api/sales/${id}`);
   },
 
   getReceipt: (id: number) => {
-    return axios.get(`/api/sales/${id}/receipt`);
+    return AxiosInstance.get(`/api/sales/${id}/receipt`);
   },
 
   getDailySales: () => {
-    return axios.get("/api/sales/daily");
+    return AxiosInstance.get("/api/sales/daily");
   },
 };
 

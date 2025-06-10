@@ -35,16 +35,20 @@ class RolesAndPermissionsSeeder extends Seeder
             // User management permissions
             'manage_users' => 'Can manage user accounts',
             'view_users' => 'Can view user details',
+
+            // Settings permissions
+            'manage_settings' => 'Can manage system settings',
         ];
 
+        // Create or update permissions
         foreach ($permissions as $name => $description) {
-            Permission::create([
-                'name' => $name,
-                'description' => $description
-            ]);
+            Permission::updateOrCreate(
+                ['name' => $name],
+                ['description' => $description]
+            );
         }
 
-        // Create roles
+        // Define roles with their permissions
         $roles = [
             'cashier' => [
                 'description' => 'Basic transaction processing',
@@ -77,14 +81,20 @@ class RolesAndPermissionsSeeder extends Seeder
             ]
         ];
 
+        // Create or update roles and assign permissions
         foreach ($roles as $name => $details) {
-            $role = Role::create([
-                'name' => $name,
-                'description' => $details['description']
-            ]);
+            $role = Role::updateOrCreate(
+                ['name' => $name],
+                ['description' => $details['description']]
+            );
 
+            // Get all permission models for this role
             $permissionModels = Permission::whereIn('name', $details['permissions'])->get();
-            $role->permissions()->attach($permissionModels);
+
+            // Sync permissions (this will remove any permissions not in the array)
+            $role->permissions()->sync($permissionModels->pluck('id'));
         }
+
+        $this->command->info('Roles and permissions seeded successfully!');
     }
 }

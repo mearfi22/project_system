@@ -1,21 +1,23 @@
 import React, { useRef, useState } from "react";
 import { Modal } from "react-bootstrap";
-import { Products as ProductInterface } from "../../../interfaces/Products";
+import { Product } from "../../../interfaces/Products";
 import EditProductForm from "../../forms/product/EditProductForm";
 
 interface EditProductModalProps {
   show: boolean;
   onHide: () => void;
-  product: ProductInterface;
-  onProductUpdated: (message: string) => void;
+  product: Product | null;
+  onProductUpdated: (product: Product, message: string) => void;
 }
 
-const EditProductModal = ({
+const EditProductModal: React.FC<EditProductModalProps> = ({
   show,
   onHide,
   product,
   onProductUpdated,
-}: EditProductModalProps) => {
+}) => {
+  if (!product) return null;
+
   const [loadingUpdate, setLoadingUpdate] = useState(false);
   const submitForm = useRef<(() => void) | null>(null);
 
@@ -34,7 +36,7 @@ const EditProductModal = ({
       size="lg"
     >
       <Modal.Header closeButton>
-        <Modal.Title>Edit Product</Modal.Title>
+        <Modal.Title>Edit Product - {product.name}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <EditProductForm

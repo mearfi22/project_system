@@ -12,6 +12,7 @@ class Transaction extends Model
 
     protected $fillable = [
         'user_id',
+        'reference_number',
         'customer_name',
         'customer_email',
         'subtotal',
@@ -34,9 +35,35 @@ class Transaction extends Model
         'receipt_sent' => 'boolean',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($transaction) {
+            $transaction->reference_number = static::generateReferenceNumber();
+        });
+    }
+
+    public static function generateReferenceNumber()
+    {
+        $prefix = date('Ymd');
+        $lastTransaction = static::where('reference_number', 'like', $prefix . '%')
+            ->orderBy('reference_number', 'desc')
+            ->first();
+
+        if ($lastTransaction) {
+            $lastNumber = intval(substr($lastTransaction->reference_number, -4));
+            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $newNumber = '0001';
+        }
+
+        return $prefix . $newNumber;
+    }
+
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
     public function items()
@@ -46,7 +73,10 @@ class Transaction extends Model
 
     public function calculateTotals()
     {
-        $this->subtotal = $this->items->sum('total_amount');
+        $this->subtotal = (float)$this->items->sum('total_amount');
+        $this->discount_amount = (float)($this->discount_amount ?? 0);
+        $this->tax_amount = (float)($this->tax_amount ?? 0);
+
         $this->total_amount = $this->subtotal - $this->discount_amount + $this->tax_amount;
         $this->save();
     }

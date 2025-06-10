@@ -33,16 +33,28 @@ const Users = () => {
   };
 
   return (
-    <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Users</h1>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => setOpenAddUserModal(true)}
-        >
-          Add User
-        </button>
+    <div className="container-fluid px-4">
+      <div className="card shadow-sm border-0 mb-4">
+        <div className="card-header bg-white py-3">
+          <div className="d-flex justify-content-between align-items-center">
+            <h5 className="mb-0 text-primary">Users Management</h5>
+            <button
+              type="button"
+              className="btn btn-primary d-flex align-items-center gap-2"
+              onClick={() => setOpenAddUserModal(true)}
+            >
+              <i className="bi bi-plus-circle"></i>
+              Add New User
+            </button>
+          </div>
+        </div>
+        <div className="card-body">
+          <UsersTable
+            refreshUsers={refreshUsers}
+            onEditUser={handleOpenEditUserModal}
+            onDeleteUser={handleOpenDeleteUserModal}
+          />
+        </div>
       </div>
 
       <AddUserModal
@@ -61,12 +73,6 @@ const Users = () => {
         user={selectedUser}
         onRefreshUsers={() => setRefreshUsers(!refreshUsers)}
         onClose={handleCloseDeleteUserModal}
-      />
-
-      <UsersTable
-        refreshUsers={refreshUsers}
-        onEditUser={handleOpenEditUserModal}
-        onDeleteUser={handleOpenDeleteUserModal}
       />
     </div>
   );

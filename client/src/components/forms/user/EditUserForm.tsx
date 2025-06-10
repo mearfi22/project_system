@@ -145,16 +145,16 @@ const EditUserForm = ({
       setState((prevState) => ({
         ...prevState,
         user_id: user.user_id,
-        first_name: user.first_name,
-        middle_name: user.middle_name,
-        last_name: user.last_name,
-        suffix_name: user.suffix_name,
-        birth_date: user.birth_date,
-        gender: user.gender.gender_id.toString(),
-        role: user.role.id.toString(),
-        address: user.address,
-        contact_number: user.contact_number,
-        email: user.email,
+        first_name: user.first_name || "",
+        middle_name: user.middle_name || "",
+        last_name: user.last_name || "",
+        suffix_name: user.suffix_name || "",
+        birth_date: user.birth_date || "",
+        gender: user.gender?.gender_id?.toString() || "",
+        role: user.role?.id?.toString() || "",
+        address: user.address || "",
+        contact_number: user.contact_number || "",
+        email: user.email || "",
         password: "",
         password_confirmation: "",
       }));
@@ -399,6 +399,16 @@ const EditUserForm = ({
                 onChange={handleInputChange}
                 placeholder="Leave blank to keep current password"
               />
+              <small className="form-text text-muted">
+                If changing password, it must contain at least:
+                <ul className="mb-0">
+                  <li>8 characters long</li>
+                  <li>One uppercase letter</li>
+                  <li>One lowercase letter</li>
+                  <li>One number</li>
+                  <li>One special character (@$!%*?&)</li>
+                </ul>
+              </small>
               {state.errors.password && (
                 <span className="text-danger">{state.errors.password[0]}</span>
               )}

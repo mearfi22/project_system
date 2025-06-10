@@ -1,33 +1,31 @@
-import axios from "axios";
-import { Products } from "../interfaces/Products";
-
-// Configure axios defaults
-axios.defaults.baseURL = "http://localhost:8000";
-axios.defaults.withCredentials = true;
+import AxiosInstance from "../AxiosInstance";
+import { Product } from "../interfaces/Products";
 
 const ProductService = {
   loadProducts: () => {
-    return axios.get("/api/products");
+    return AxiosInstance.get("/api/products");
   },
 
   getProduct: (id: number) => {
-    return axios.get(`/api/products/${id}`);
+    return AxiosInstance.get(`/api/products/${Number(id)}`);
   },
 
-  createProduct: (data: Partial<Products>) => {
-    return axios.post("/api/products", data);
+  createProduct: (data: Partial<Product>) => {
+    return AxiosInstance.post("/api/products", data);
   },
 
-  updateProduct: (id: number, data: Partial<Products>) => {
-    return axios.put(`/api/products/${id}`, data);
+  updateProduct: (id: number, data: Partial<Product>) => {
+    return AxiosInstance.put(`/api/products/${Number(id)}`, data);
   },
 
   deleteProduct: (id: number) => {
-    return axios.delete(`/api/products/${id}`);
+    return AxiosInstance.delete(`/api/products/${Number(id)}`);
   },
 
   updateStock: (productId: number, quantity: number) => {
-    return axios.post(`/api/products/${productId}/stock`, { quantity });
+    return AxiosInstance.post(`/api/products/${Number(productId)}/stock`, {
+      quantity,
+    });
   },
 };
 

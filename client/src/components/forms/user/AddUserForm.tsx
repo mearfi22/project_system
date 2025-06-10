@@ -383,6 +383,16 @@ const AddUserForm = ({
                 value={state.password}
                 onChange={handleInputChange}
               />
+              <small className="form-text text-muted">
+                Password must contain at least:
+                <ul className="mb-0">
+                  <li>8 characters long</li>
+                  <li>One uppercase letter</li>
+                  <li>One lowercase letter</li>
+                  <li>One number</li>
+                  <li>One special character (@$!%*?&)</li>
+                </ul>
+              </small>
               {state.errors.password && (
                 <span className="text-danger">{state.errors.password[0]}</span>
               )}

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Purchase Receipt</title>
+  </head>
+  <body
+    style="
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    "
+  >
+    <div style="text-align: center; margin-bottom: 30px">
+      <h2>[6.Business.name]</h2>
+      <p>[6.Business.address]</p>
+      <p>Phone: [6.Business.phone]</p>
+      <p>Email: [6.Business.email]</p>
+    </div>
+
+    <div style="margin-bottom: 20px; padding: 10px; background-color: #f9f9f9">
+      <p><strong>Receipt #:</strong> [6.Transaction.reference_number]</p>
+      <p><strong>Date:</strong> [6.Transaction.date]</p>
+      <p><strong>Customer:</strong> [6.Customer.name]</p>
+      <p><strong>Payment Method:</strong> [6.Transaction.payment.method]</p>
+      <p><strong>Payment Status:</strong> [6.Transaction.payment.status]</p>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; margin: 20px 0">
+      <thead>
+        <tr>
+          <th
+            style="
+              padding: 10px;
+              border: 1px solid #ddd;
+              text-align: left;
+              background-color: #f5f5f5;
+            "
+          >
+            Item
+          </th>
+          <th
+            style="
+              padding: 10px;
+              border: 1px solid #ddd;
+              text-align: left;
+              background-color: #f5f5f5;
+            "
+          >
+            Quantity
+          </th>
+          <th
+            style="
+              padding: 10px;
+              border: 1px solid #ddd;
+              text-align: left;
+              background-color: #f5f5f5;
+            "
+          >
+            Unit Price
+          </th>
+          <th
+            style="
+              padding: 10px;
+              border: 1px solid #ddd;
+              text-align: left;
+              background-color: #f5f5f5;
+            "
+          >
+            Discount
+          </th>
+          <th
+            style="
+              padding: 10px;
+              border: 1px solid #ddd;
+              text-align: left;
+              background-color: #f5f5f5;
+            "
+          >
+            Total
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd; text-align: left">
+            [1.Product.name]
+          </td>
+          <td style="padding: 10px; border: 1px solid #ddd; text-align: left">
+            [1.Quantity]
+          </td>
+          <td style="padding: 10px; border: 1px solid #ddd; text-align: left">
+            [6.Business.currency] [1.unit_price]
+          </td>
+          <td style="padding: 10px; border: 1px solid #ddd; text-align: left">
+            [if 1.Discount.amount;[6.Business.currency] [1.Discount.amount]
+            ([1.Discount.percentage]%);-]
+          </td>
+          <td style="padding: 10px; border: 1px solid #ddd; text-align: left">
+            [6.Business.currency] [1.total_amount]
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top: 20px; text-align: right">
+      <p>
+        <strong>Subtotal:</strong> [6.Business.currency] [6.Totals.subtotal]
+      </p>
+      [if 6.Totals.Discount.amount;
+      <p>
+        <strong>Discount:</strong> [6.Business.currency]
+        [6.Totals.Discount.amount] ([6.Totals.Discount.percentage]%)
+      </p>
+      ;] [if 6.Totals.tax;
+      <p><strong>Tax:</strong> [6.Business.currency] [6.Totals.tax]</p>
+      ;]
+      <p><strong>Total:</strong> [6.Business.currency] [6.Totals.total]</p>
+    </div>
+
+    [if 6.Transaction.payment.notes;
+    <div style="margin-bottom: 20px; padding: 10px; background-color: #f9f9f9">
+      <p><strong>Notes:</strong> [6.Transaction.payment.notes]</p>
+    </div>
+    ;]
+
+    <div
+      style="margin-top: 30px; text-align: center; font-size: 14px; color: #666"
+    >
+      <p>[6.Business.receipt_footer]</p>
+      <p>Thank you for your business!</p>
+    </div>
+  </body>
+</html>

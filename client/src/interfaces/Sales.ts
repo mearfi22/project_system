@@ -1,10 +1,12 @@
-import { Products } from "./Products";
+import { Product } from "./Products";
 
 export interface CartItem {
   id: number;
-  product: Products;
+  product: Product;
   quantity: number;
   price: number;
+  discount: number;
+  discountPercentage: number;
   subtotal: number;
 }
 

@@ -5,7 +5,6 @@ export interface Product {
   price: number;
   stock_quantity: number;
   alert_threshold: number;
-  sku: string;
   barcode: string | null;
   category: string | null;
   active: boolean;

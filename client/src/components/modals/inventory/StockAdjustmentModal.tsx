@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
-import { Products } from "../../../interfaces/Products";
+import { Modal } from "react-bootstrap";
+import { Product } from "../../../interfaces/Products";
 import { StockAdjustment } from "../../../interfaces/Inventory";
 import InventoryService from "../../../services/InventoryService";
 import ErrorHandler from "../../../handler/ErrorHandler";
+import SpinnerSmall from "../../SpinnerSmall";
 
 interface Props {
   show: boolean;
   onHide: () => void;
-  product: Products;
+  product: Product;
   onStockAdjusted: (message: string) => void;
 }
 
@@ -43,86 +44,118 @@ const StockAdjustmentModal: React.FC<Props> = ({
       });
   };
 
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "quantity" ? parseInt(value) || 0 : value,
+    }));
+  };
+
   return (
-    <Modal show={show} onHide={onHide} backdrop="static" keyboard={false}>
-      <Modal.Header closeButton>
-        <Modal.Title>Adjust Stock - {product.name}</Modal.Title>
-      </Modal.Header>
-      <Form onSubmit={handleSubmit}>
-        <Modal.Body>
-          <Form.Group className="mb-3">
-            <Form.Label>Current Stock</Form.Label>
-            <Form.Control type="text" value={product.stock_quantity} disabled />
-          </Form.Group>
+    <Modal
+      show={show}
+      onHide={onHide}
+      backdrop="static"
+      keyboard={false}
+      centered
+    >
+      <form onSubmit={handleSubmit}>
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title as="h5" className="text-primary">
+            Adjust Stock - {product.name}
+          </Modal.Title>
+        </Modal.Header>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Type</Form.Label>
-            <Form.Select
-              value={formData.type}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  type: e.target.value as "in" | "out",
-                })
-              }
-              required
-            >
-              <option value="in">Stock In</option>
-              <option value="out">Stock Out</option>
-            </Form.Select>
-          </Form.Group>
+        <Modal.Body className="pt-4">
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="form-label">Movement Type</label>
+              <select
+                name="type"
+                className="form-select"
+                value={formData.type}
+                onChange={handleInputChange}
+                disabled={loading}
+              >
+                <option value="in">Stock In</option>
+                <option value="out">Stock Out</option>
+              </select>
+            </div>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Quantity</Form.Label>
-            <Form.Control
-              type="number"
-              min="1"
-              value={formData.quantity}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  quantity: parseInt(e.target.value) || 0,
-                })
-              }
-              required
-            />
-          </Form.Group>
+            <div className="col-md-6">
+              <label className="form-label">Quantity</label>
+              <input
+                type="number"
+                name="quantity"
+                className="form-control"
+                value={formData.quantity}
+                onChange={handleInputChange}
+                min="1"
+                required
+                disabled={loading}
+              />
+            </div>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Reference</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="e.g., Purchase Order #123"
-              value={formData.reference}
-              onChange={(e) =>
-                setFormData({ ...formData, reference: e.target.value })
-              }
-              required
-            />
-          </Form.Group>
+            <div className="col-12">
+              <label className="form-label">Reference</label>
+              <input
+                type="text"
+                name="reference"
+                className="form-control"
+                value={formData.reference}
+                onChange={handleInputChange}
+                placeholder="e.g., Purchase Order #123"
+                required
+                disabled={loading}
+              />
+            </div>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Notes</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              placeholder="Additional notes..."
-              value={formData.notes}
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
-            />
-          </Form.Group>
+            <div className="col-12">
+              <label className="form-label">Notes</label>
+              <textarea
+                name="notes"
+                className="form-control"
+                value={formData.notes}
+                onChange={handleInputChange}
+                placeholder="Add any additional notes here..."
+                rows={3}
+                disabled={loading}
+              />
+            </div>
+          </div>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={onHide} disabled={loading}>
+
+        <Modal.Footer className="border-0 pt-0">
+          <button
+            type="button"
+            className="btn btn-light"
+            onClick={onHide}
+            disabled={loading}
+          >
             Cancel
-          </Button>
-          <Button type="submit" variant="primary" disabled={loading}>
-            {loading ? "Adjusting..." : "Adjust Stock"}
-          </Button>
+          </button>
+          <button
+            type="submit"
+            className="btn btn-primary d-flex align-items-center gap-2"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <SpinnerSmall /> Adjusting Stock...
+              </>
+            ) : (
+              <>
+                <i className="bi bi-check2"></i> Save Changes
+              </>
+            )}
+          </button>
         </Modal.Footer>
-      </Form>
+      </form>
     </Modal>
   );
 };

@@ -1,5 +1,5 @@
 export interface LoginFieldErrors {
-    general: string[];
-    email?: string[];
-    password?: string[];
+  email?: string[];
+  password?: string[];
+  general?: string[];
 }

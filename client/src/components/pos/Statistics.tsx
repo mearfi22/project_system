@@ -12,8 +12,8 @@ import {
   ChartData,
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
-import axios from "axios";
-import { useAuth } from "../../hooks/useAuth";
+import AxiosInstance from "../../AxiosInstance";
+import { useAuth } from "../../contexts/AuthContext";
 
 ChartJS.register(
   CategoryScale,
@@ -34,9 +34,8 @@ interface SalesData {
 }
 
 interface TopProduct {
-  product: {
-    name: string;
-  };
+  product_id: number;
+  product_name: string;
   total_quantity: number;
   total_revenue: number;
 }
@@ -48,26 +47,26 @@ interface FeedbackData {
 }
 
 const Statistics: React.FC = () => {
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [feedbackData, setFeedbackData] = useState<FeedbackData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.hasPermission("view_reports")) {
+    if (user && hasPermission("view_reports")) {
       fetchData();
     }
-  }, [user]);
+  }, [user, hasPermission]);
 
   const fetchData = async () => {
     try {
       const [salesResponse, feedbackResponse] = await Promise.all([
-        axios.get("/api/reports/sales"),
-        axios.get("/api/reports/feedback"),
+        AxiosInstance.get("/api/sales/daily"),
+        AxiosInstance.get("/api/reports/feedback"),
       ]);
 
-      setSalesData(salesResponse.data.sales_data);
+      setSalesData(salesResponse.data);
       setTopProducts(salesResponse.data.top_products);
       setFeedbackData(feedbackResponse.data.rating_distribution);
       setLoading(false);
@@ -90,7 +89,7 @@ const Statistics: React.FC = () => {
   };
 
   const productChartData: ChartData<"bar"> = {
-    labels: topProducts.map((product) => product.product.name),
+    labels: topProducts.map((product) => product.product_name),
     datasets: [
       {
         label: "Revenue",
@@ -115,7 +114,7 @@ const Statistics: React.FC = () => {
     return <div>Loading statistics...</div>;
   }
 
-  if (!user?.hasPermission("view_reports")) {
+  if (!user || !hasPermission("view_reports")) {
     return <div>You don't have permission to view reports.</div>;
   }
 

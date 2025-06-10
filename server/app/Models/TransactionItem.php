@@ -12,6 +12,7 @@ class TransactionItem extends Model
     protected $fillable = [
         'transaction_id',
         'product_id',
+        'product_name',
         'quantity',
         'unit_price',
         'discount_amount',
@@ -36,7 +37,12 @@ class TransactionItem extends Model
 
     public function calculateTotal()
     {
-        $this->total_amount = ($this->quantity * $this->unit_price) - $this->discount_amount;
+        $quantity = (float)$this->quantity;
+        $unit_price = (float)$this->unit_price;
+        $discount_amount = (float)($this->discount_amount ?? 0);
+
+        $subtotal = $quantity * $unit_price;
+        $this->total_amount = $subtotal - $discount_amount;
         $this->save();
     }
 }

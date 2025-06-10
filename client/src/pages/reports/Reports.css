@@ -1,0 +1,71 @@
+.feedback-section .text-warning {
+  color: #ffc107 !important;
+}
+
+.feedback-section .progress {
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.feedback-section .progress-bar {
+  border-radius: 0.5rem;
+}
+
+.feedback-section .bi-star-fill,
+.feedback-section .bi-star {
+  font-size: 1rem;
+  display: inline-block;
+  margin-right: 2px;
+}
+
+.feedback-section .table {
+  margin-bottom: 0;
+  background-color: white;
+}
+
+.feedback-section .table th {
+  font-weight: 600;
+  color: #495057;
+  padding: 1rem;
+  border-bottom: 2px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+
+.feedback-section .table td {
+  vertical-align: middle;
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.feedback-section .table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.feedback-section .table-responsive {
+  border-radius: 0.5rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-section .card {
+  border: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+}
+
+.feedback-section .card-title {
+  color: #495057;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.feedback-section .card-body {
+  padding: 1.5rem;
+}
+
+.feedback-section .rating-bars {
+  margin-top: 1rem;
+}
+
+.feedback-section .text-muted {
+  color: #6c757d !important;
+}

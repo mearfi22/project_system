@@ -5,15 +5,15 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Products as ProductInterface } from "../../../interfaces/Products";
+import { Product } from "../../../interfaces/Products";
 import ProductService from "../../../services/ProductService";
 import ErrorHandler from "../../../handler/ErrorHandler";
 
 interface EditProductFormProps {
-  product: ProductInterface;
+  product: Product;
   setSubmitForm: React.MutableRefObject<(() => void) | null>;
   setLoadingUpdate: (loading: boolean) => void;
-  onProductUpdated: (message: string) => void;
+  onProductUpdated: (updatedProduct: Product, message: string) => void;
 }
 
 interface ProductFieldErrors {
@@ -22,7 +22,6 @@ interface ProductFieldErrors {
   price?: string[];
   stock_quantity?: string[];
   alert_threshold?: string[];
-  sku?: string[];
   barcode?: string[];
   category?: string[];
   active?: string[];
@@ -40,10 +39,9 @@ const EditProductForm = ({
     price: product.price.toString(),
     stock_quantity: product.stock_quantity.toString(),
     alert_threshold: product.alert_threshold.toString(),
-    sku: product.sku,
     barcode: product.barcode || "",
     category: product.category || "",
-    active: product.active,
+    active: product.stock_quantity > 0,
     errors: {} as ProductFieldErrors,
   });
 
@@ -64,25 +62,83 @@ const EditProductForm = ({
 
     // Convert string values to appropriate types
     const productData = {
-      ...state,
+      name: state.name.trim(),
+      description: state.description.trim(),
       price: parseFloat(state.price),
       stock_quantity: parseInt(state.stock_quantity),
       alert_threshold: parseInt(state.alert_threshold),
+      barcode: state.barcode.trim(),
+      category: state.category.trim(),
+      active: parseInt(state.stock_quantity) > 0,
     };
+
+    // Validate required fields
+    if (!productData.name) {
+      setState((prev) => ({
+        ...prev,
+        errors: {
+          ...prev.errors,
+          name: ["Product name is required"],
+        },
+      }));
+      setLoadingUpdate(false);
+      return;
+    }
+
+    if (isNaN(productData.price) || productData.price < 0) {
+      setState((prev) => ({
+        ...prev,
+        errors: {
+          ...prev.errors,
+          price: ["Price must be a valid number greater than or equal to 0"],
+        },
+      }));
+      setLoadingUpdate(false);
+      return;
+    }
+
+    if (isNaN(productData.stock_quantity) || productData.stock_quantity < 0) {
+      setState((prev) => ({
+        ...prev,
+        errors: {
+          ...prev.errors,
+          stock_quantity: [
+            "Stock quantity must be a valid number greater than or equal to 0",
+          ],
+        },
+      }));
+      setLoadingUpdate(false);
+      return;
+    }
+
+    if (isNaN(productData.alert_threshold) || productData.alert_threshold < 0) {
+      setState((prev) => ({
+        ...prev,
+        errors: {
+          ...prev.errors,
+          alert_threshold: [
+            "Alert threshold must be a valid number greater than or equal to 0",
+          ],
+        },
+      }));
+      setLoadingUpdate(false);
+      return;
+    }
 
     ProductService.updateProduct(product.id, productData)
       .then((res) => {
-        if (res.status === 200) {
-          onProductUpdated(res.data.message);
+        if (res.data?.message) {
+          // Pass both the updated product and message to the parent
+          onProductUpdated(res.data.product, res.data.message);
         } else {
-          console.error(
-            "Unexpected status error while updating product: ",
-            res.status
+          onProductUpdated(
+            { ...product, ...productData },
+            "Product updated successfully"
           );
         }
       })
       .catch((error) => {
-        if (error.response?.status === 422) {
+        if (error.response?.status === 422 && error.response?.data?.errors) {
           setState((prevState) => ({
             ...prevState,
             errors: error.response.data.errors,
@@ -209,40 +265,6 @@ const EditProductForm = ({
             </div>
 
             <div className="mb-3">
-              <label htmlFor="edit-sku">SKU</label>
-              <input
-                type="text"
-                className={`form-control ${
-                  state.errors.sku ? "is-invalid" : ""
-                }`}
-                name="sku"
-                id="edit-sku"
-                value={state.sku}
-                onChange={handleInputChange}
-              />
-              {state.errors.sku && (
-                <span className="text-danger">{state.errors.sku[0]}</span>
-              )}
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="edit-barcode">Barcode</label>
-              <input
-                type="text"
-                className={`form-control ${
-                  state.errors.barcode ? "is-invalid" : ""
-                }`}
-                name="barcode"
-                id="edit-barcode"
-                value={state.barcode}
-                onChange={handleInputChange}
-              />
-              {state.errors.barcode && (
-                <span className="text-danger">{state.errors.barcode[0]}</span>
-              )}
-            </div>
-
-            <div className="mb-3">
               <label htmlFor="edit-category">Category</label>
               <input
                 type="text"
@@ -260,26 +282,28 @@ const EditProductForm = ({
             </div>
 
             <div className="mb-3">
-              <div className="form-check">
+              <div className="form-check form-switch">
                 <input
                   type="checkbox"
-                  className={`form-check-input ${
-                    state.errors.active ? "is-invalid" : ""
-                  }`}
+                  className="form-check-input"
                   name="active"
                   id="edit-active"
                   checked={state.active}
                   onChange={handleInputChange}
+                  disabled={parseInt(state.stock_quantity) <= 0}
                 />
                 <label className="form-check-label" htmlFor="edit-active">
                   Active
                 </label>
-                {state.errors.active && (
-                  <div className="invalid-feedback">
-                    {state.errors.active[0]}
-                  </div>
+                {parseInt(state.stock_quantity) <= 0 && (
+                  <small className="text-muted d-block">
+                    Product is automatically inactive when stock is 0
+                  </small>
                 )}
               </div>
+              {state.errors.active && (
+                <span className="text-danger">{state.errors.active[0]}</span>
+              )}
             </div>
           </div>
         </div>

@@ -18,6 +18,7 @@ const UsersTable = ({
   const [state, setState] = useState({
     loadingUsers: true,
     users: [] as Users[],
+    searchTerm: "",
   });
 
   const handleLoadUsers = () => {
@@ -64,71 +65,142 @@ const UsersTable = ({
     return fullName;
   };
 
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setState((prev) => ({ ...prev, searchTerm: event.target.value }));
+  };
+
+  const filteredUsers = state.users.filter((user) => {
+    const searchTerm = state.searchTerm.toLowerCase();
+    return (
+      handleUsersFullName(user).toLowerCase().includes(searchTerm) ||
+      user.email.toLowerCase().includes(searchTerm) ||
+      user.contact_number.toLowerCase().includes(searchTerm) ||
+      user.role.name.toLowerCase().includes(searchTerm)
+    );
+  });
+
   useEffect(() => {
     handleLoadUsers();
   }, [refreshUsers]);
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   return (
     <>
-      <table className="table table-hover">
-        <thead>
-          <tr>
-            <th>No.</th>
-            <th>Full Name</th>
-            <th>Gender</th>
-            <th>Birthdate</th>
-            <th>Address</th>
-            <th>Contact Number</th>
-            <th>Email</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {state.loadingUsers ? (
-            <tr className="align-middle">
-              <td colSpan={8} className="text-center">
-                <Spinner />
-              </td>
+      <div className="mb-4">
+        <div className="input-group">
+          <span className="input-group-text bg-white border-end-0">
+            <i className="bi bi-search text-muted"></i>
+          </span>
+          <input
+            type="text"
+            className="form-control border-start-0 ps-0"
+            placeholder="Search users by name, email, contact number or role..."
+            value={state.searchTerm}
+            onChange={handleSearch}
+          />
+        </div>
+      </div>
+
+      <div className="table-responsive">
+        <table className="table table-hover align-middle">
+          <thead className="bg-light">
+            <tr>
+              <th className="text-nowrap">User Info</th>
+              <th className="text-nowrap">Contact Details</th>
+              <th className="text-nowrap">Role</th>
+              <th className="text-nowrap">Actions</th>
             </tr>
-          ) : state.users.length > 0 ? (
-            state.users.map((user, index) => (
-              <tr className="align-middle" key={index}>
-                <td>{index + 1}</td>
-                <td>{handleUsersFullName(user)}</td>
-                <td>{user.gender.gender}</td>
-                <td>{user.birth_date}</td>
-                <td>{user.address}</td>
-                <td>{user.contact_number}</td>
-                <td>{user.email}</td>
-                <td>
-                  <div className="btn-group">
-                    <button
-                      type="button"
-                      className="btn btn-success"
-                      onClick={() => onEditUser(user)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-danger"
-                      onClick={() => onDeleteUser(user)}
-                    >
-                      Delete
-                    </button>
-                  </div>
+          </thead>
+          <tbody>
+            {state.loadingUsers ? (
+              <tr>
+                <td colSpan={4} className="text-center py-4">
+                  <Spinner />
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr className="align-middle">
-              <td colSpan={8} className="text-center">
-                No Users Found
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            ) : filteredUsers.length > 0 ? (
+              filteredUsers.map((user, index) => (
+                <tr key={user.user_id}>
+                  <td>
+                    <div className="d-flex flex-column">
+                      <span className="fw-medium">
+                        {handleUsersFullName(user)}
+                      </span>
+                      <small className="text-muted">
+                        {user.gender.gender} • {formatDate(user.birth_date)}
+                      </small>
+                      <small className="text-muted">{user.address}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="d-flex flex-column">
+                      <span>{user.email}</span>
+                      <small className="text-muted">
+                        {user.contact_number}
+                      </small>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      className={`badge rounded-pill bg-${
+                        user.role.name === "admin"
+                          ? "danger"
+                          : user.role.name === "manager"
+                          ? "warning"
+                          : "info"
+                      }`}
+                    >
+                      {user.role.name.charAt(0).toUpperCase() +
+                        user.role.name.slice(1)}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="d-flex gap-2">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        onClick={() => onEditUser(user)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-danger"
+                        onClick={() => onDeleteUser(user)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={4} className="text-center py-4 text-muted">
+                  {state.searchTerm ? (
+                    <>
+                      <i className="bi bi-search display-6 d-block mb-2"></i>
+                      No users found matching "{state.searchTerm}"
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-people display-6 d-block mb-2"></i>
+                      No users available
+                    </>
+                  )}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </>
   );
 };
