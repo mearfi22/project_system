@@ -4,6 +4,7 @@ import { Line, Bar } from "react-chartjs-2";
 import { toast } from "react-toastify";
 import AxiosInstance from "../../utils/AxiosInstance";
 import { useNavigate } from "react-router-dom";
+import "./Dashboard.css";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -106,8 +107,10 @@ const Dashboard = () => {
       {
         label: "Daily Sales",
         data: data?.sales_data?.map((item) => item.total_sales) || [],
-        borderColor: "rgb(75, 192, 192)",
-        tension: 0.1,
+        borderColor: "#0d6efd",
+        backgroundColor: "rgba(13, 110, 253, 0.1)",
+        tension: 0.4,
+        fill: true,
       },
     ],
   };
@@ -123,7 +126,8 @@ const Dashboard = () => {
               ? item?.total_revenue
               : item?.total_quantity
           ) || [],
-        backgroundColor: "rgba(75, 192, 192, 0.5)",
+        backgroundColor: "rgba(13, 110, 253, 0.7)",
+        borderRadius: 4,
       },
     ],
   };
@@ -136,75 +140,43 @@ const Dashboard = () => {
     },
     responsive: true,
     maintainAspectRatio: true,
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: "rgba(0, 0, 0, 0.05)",
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+    },
   };
 
   if (loading) {
     return (
-      <div className="text-center mt-5">
-        <div className="spinner-border" role="status">
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ minHeight: "80vh" }}
+      >
+        <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
       </div>
     );
   }
 
-  // Show large POS button for cashier role
   if (userRole.toLowerCase() === "cashier") {
     return (
-      <div
-        className="container-fluid py-4 d-flex align-items-center justify-content-center"
-        style={{
-          minHeight: "80vh",
-          background: "linear-gradient(to right bottom, #f8f9fa, #ffffff)",
-        }}
-      >
-        <div
-          className="text-center p-5 rounded-4 shadow-sm"
-          onClick={() => navigate("/pos")}
-          style={{
-            cursor: "pointer",
-            background: "white",
-            transition: "all 0.3s ease",
-            transform: "translateY(0)",
-            border: "1px solid rgba(0,0,0,0.1)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-5px)";
-            e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
-          }}
-        >
-          <div
-            style={{
-              fontSize: "3.5rem",
-              color: "#0d6efd",
-              marginBottom: "1rem",
-            }}
-          >
+      <div className="cashier-dashboard">
+        <div className="pos-button-card" onClick={() => navigate("/pos")}>
+          <div className="icon">
             <i className="bi bi-cart3"></i>
           </div>
-          <div
-            style={{
-              fontSize: "1.75rem",
-              fontWeight: "500",
-              color: "#212529",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Open Point of Sale
-          </div>
-          <div
-            style={{
-              fontSize: "1rem",
-              color: "#6c757d",
-              marginTop: "0.5rem",
-            }}
-          >
-            Click to start a new transaction
-          </div>
+          <div className="title">Open Point of Sale</div>
+          <div className="subtitle">Click to start a new transaction</div>
         </div>
       </div>
     );
@@ -212,37 +184,36 @@ const Dashboard = () => {
 
   return (
     <div className="container-fluid py-4">
-      <h1 className="mb-4">Dashboard</h1>
+      <div className="dashboard-header">
+        <h1>Dashboard</h1>
+        <p>Welcome back! Here's your business overview.</p>
+      </div>
 
       {/* Summary Cards */}
-      <div className="row mb-4">
+      <div className="row g-4 mb-4">
         <div className="col-md-4">
-          <div className="card">
+          <div className="card summary-card">
             <div className="card-body">
               <h5 className="card-title">Today's Sales</h5>
-              <p className="card-text display-6">
+              <p className="display-6">
                 ₱{data?.summary?.total_sales?.toFixed(2) || "0.00"}
               </p>
             </div>
           </div>
         </div>
         <div className="col-md-4">
-          <div className="card">
+          <div className="card summary-card">
             <div className="card-body">
               <h5 className="card-title">Total Products</h5>
-              <p className="card-text display-6">
-                {data?.summary?.total_products || 0}
-              </p>
+              <p className="display-6">{data?.summary?.total_products || 0}</p>
             </div>
           </div>
         </div>
         <div className="col-md-4">
-          <div className="card">
+          <div className="card summary-card">
             <div className="card-body">
               <h5 className="card-title">Low Stock Items</h5>
-              <p className="card-text display-6">
-                {data?.summary?.low_stock_count || 0}
-              </p>
+              <p className="display-6">{data?.summary?.low_stock_count || 0}</p>
             </div>
           </div>
         </div>
@@ -251,14 +222,14 @@ const Dashboard = () => {
       {/* Charts */}
       <div className="row">
         <div className="col-md-8">
-          <div className="card mb-4">
+          <div className="card chart-card">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="card-title mb-0">Sales Trend</h5>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h5 className="card-title">Sales Trend</h5>
                 <div className="btn-group">
                   <button
                     type="button"
-                    className={`btn btn-sm ${
+                    className={`btn ${
                       period === "daily" ? "btn-primary" : "btn-outline-primary"
                     }`}
                     onClick={() => setPeriod("daily")}
@@ -267,7 +238,7 @@ const Dashboard = () => {
                   </button>
                   <button
                     type="button"
-                    className={`btn btn-sm ${
+                    className={`btn ${
                       period === "weekly"
                         ? "btn-primary"
                         : "btn-outline-primary"
@@ -278,7 +249,7 @@ const Dashboard = () => {
                   </button>
                   <button
                     type="button"
-                    className={`btn btn-sm ${
+                    className={`btn ${
                       period === "monthly"
                         ? "btn-primary"
                         : "btn-outline-primary"
@@ -294,14 +265,14 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="col-md-4">
-          <div className="card mb-4">
+          <div className="card chart-card">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="card-title mb-0">Top Products</h5>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h5 className="card-title">Top Products</h5>
                 <div className="btn-group">
                   <button
                     type="button"
-                    className={`btn btn-sm ${
+                    className={`btn ${
                       productView === "revenue"
                         ? "btn-primary"
                         : "btn-outline-primary"
@@ -312,7 +283,7 @@ const Dashboard = () => {
                   </button>
                   <button
                     type="button"
-                    className={`btn btn-sm ${
+                    className={`btn ${
                       productView === "quantity"
                         ? "btn-primary"
                         : "btn-outline-primary"
@@ -332,30 +303,28 @@ const Dashboard = () => {
       {/* Top Products Table */}
       <div className="row">
         <div className="col-12">
-          <div className="card mb-4">
+          <div className="card table-card">
             <div className="card-header">
-              <h5 className="card-title mb-0">Top Products Details</h5>
+              <h5>Top Products Details</h5>
             </div>
             <div className="card-body">
               <div className="table-responsive">
                 <table className="table table-striped">
                   <thead>
                     <tr>
-                      <th className="text-center">Product</th>
-                      <th className="text-center">Quantity Sold</th>
-                      <th className="text-center">Revenue</th>
+                      <th>Product</th>
+                      <th className="text-end">Quantity Sold</th>
+                      <th className="text-end">Revenue</th>
                     </tr>
                   </thead>
                   <tbody>
                     {data?.top_products?.map((product) => (
                       <tr key={product?.product_id || "unknown"}>
-                        <td className="text-center">
-                          {product?.product_name || "Unknown Product"}
-                        </td>
-                        <td className="text-center">
+                        <td>{product?.product_name || "Unknown Product"}</td>
+                        <td className="text-end">
                           {product?.total_quantity || 0}
                         </td>
-                        <td className="text-center">
+                        <td className="text-end">
                           ₱{Number(product?.total_revenue || 0).toFixed(2)}
                         </td>
                       </tr>

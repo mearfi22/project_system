@@ -1,71 +1,286 @@
-.feedback-section .text-warning {
-  color: #ffc107 !important;
+.reports-header {
+  margin-bottom: 2rem;
 }
 
+.reports-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.reports-header p {
+  color: #6c757d;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.report-nav {
+  margin-bottom: 2rem;
+}
+
+.report-nav .btn {
+  min-width: 120px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+}
+
+.report-card {
+  border: none;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.report-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.report-card .card-body {
+  padding: 1.5rem;
+}
+
+.report-card .card-title {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.report-card .card-subtitle {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card .stat-title {
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+}
+
+.stat-card .stat-value {
+  color: #2c3e50;
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.stat-card .stat-change {
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-card .stat-change.positive {
+  color: #198754;
+}
+
+.stat-card .stat-change.negative {
+  color: #dc3545;
+}
+
+.chart-card {
+  border: none;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.chart-card .card-body {
+  padding: 1.5rem;
+}
+
+.chart-card .card-title {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.chart-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.chart-controls .btn-group .btn {
+  min-width: 80px;
+  padding: 0.375rem 1rem;
+  font-size: 0.875rem;
+}
+
+.table-card {
+  border: none;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.table-card .card-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+}
+
+.table-card .card-header h5 {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.table-card .table {
+  margin-bottom: 0;
+}
+
+.table-card .table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+  padding: 1rem 1.5rem;
+  border-bottom-width: 1px;
+}
+
+.table-card .table td {
+  padding: 1rem 1.5rem;
+  vertical-align: middle;
+  color: #2c3e50;
+}
+
+.table-card .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Feedback Section Styles */
 .feedback-section .progress {
-  background-color: #f8f9fa;
+  height: 0.75rem;
   border-radius: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .feedback-section .progress-bar {
   border-radius: 0.5rem;
 }
 
-.feedback-section .bi-star-fill,
-.feedback-section .bi-star {
-  font-size: 1rem;
-  display: inline-block;
-  margin-right: 2px;
+.feedback-section .rating-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
 }
 
-.feedback-section .table {
-  margin-bottom: 0;
-  background-color: white;
+.feedback-section .rating-label {
+  min-width: 60px;
+  font-weight: 500;
 }
 
-.feedback-section .table th {
-  font-weight: 600;
-  color: #495057;
-  padding: 1rem;
-  border-bottom: 2px solid #dee2e6;
-  background-color: #f8f9fa;
+.feedback-section .rating-bar {
+  flex-grow: 1;
 }
 
-.feedback-section .table td {
-  vertical-align: middle;
-  padding: 1rem;
-  border-bottom: 1px solid #dee2e6;
+.feedback-section .rating-count {
+  min-width: 50px;
+  text-align: right;
+  color: #6c757d;
 }
 
-.feedback-section .table tbody tr:hover {
-  background-color: #f8f9fa;
+.feedback-section .bi-star-fill {
+  color: #ffc107;
 }
 
-.feedback-section .table-responsive {
-  border-radius: 0.5rem;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.feedback-section .card {
+.feedback-section .feedback-card {
   border: none;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  border-radius: 0.5rem;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1rem;
+  transition: transform 0.2s ease;
 }
 
-.feedback-section .card-title {
-  color: #495057;
+.feedback-card:hover {
+  transform: translateY(-2px);
+}
+
+.feedback-card .feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.feedback-card .customer-name {
   font-weight: 600;
-  margin-bottom: 1.5rem;
+  color: #2c3e50;
 }
 
-.feedback-section .card-body {
-  padding: 1.5rem;
+.feedback-card .feedback-date {
+  color: #6c757d;
+  font-size: 0.875rem;
 }
 
-.feedback-section .rating-bars {
-  margin-top: 1rem;
+.feedback-card .feedback-rating {
+  margin-bottom: 0.5rem;
 }
 
-.feedback-section .text-muted {
-  color: #6c757d !important;
+.feedback-card .feedback-text {
+  color: #2c3e50;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Loading State */
+.reports-loading {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reports-loading .spinner-border {
+  width: 3rem;
+  height: 3rem;
+  color: #0d6efd;
+}
+
+/* Error State */
+.reports-error {
+  text-align: center;
+  padding: 2rem;
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+  border-radius: 12px;
+  margin: 2rem 0;
 }

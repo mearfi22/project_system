@@ -7,6 +7,7 @@ import ErrorHandler from "../../handler/ErrorHandler";
 import { toast } from "react-toastify";
 import StockAdjustmentModal from "../../components/modals/inventory/StockAdjustmentModal";
 import { format } from "date-fns";
+import "./Inventory.css";
 
 const Inventory = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -109,6 +110,7 @@ const Inventory = () => {
             <button
               type="button"
               className="btn btn-warning d-flex align-items-center gap-2"
+              style={{ minWidth: "140px" }}
               onClick={handleCheckLowStock}
             >
               <i className="bi bi-exclamation-triangle"></i>
@@ -173,12 +175,24 @@ const Inventory = () => {
                   <table className="table table-hover align-middle mb-0">
                     <thead className="bg-light">
                       <tr>
-                        <th className="text-nowrap">Date & Time</th>
-                        <th className="text-nowrap">Product</th>
-                        <th className="text-nowrap">Type</th>
-                        <th className="text-nowrap">Quantity</th>
-                        <th className="text-nowrap">Reference</th>
-                        <th className="text-nowrap">Notes</th>
+                        <th className="text-center" style={{ width: "20%" }}>
+                          Date & Time
+                        </th>
+                        <th className="text-center" style={{ width: "20%" }}>
+                          Product
+                        </th>
+                        <th className="text-center" style={{ width: "15%" }}>
+                          Type
+                        </th>
+                        <th className="text-center" style={{ width: "15%" }}>
+                          Quantity
+                        </th>
+                        <th className="text-center" style={{ width: "15%" }}>
+                          Reference
+                        </th>
+                        <th className="text-center" style={{ width: "15%" }}>
+                          Notes
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -206,14 +220,16 @@ const Inventory = () => {
                       ) : (
                         filteredMovements.map((movement) => (
                           <tr key={movement.id}>
-                            <td className="text-nowrap">
+                            <td className="text-center">
                               {format(
                                 new Date(movement.created_at),
                                 "MMM d, yyyy h:mm a"
                               )}
                             </td>
-                            <td>{movement.product?.name}</td>
-                            <td>
+                            <td className="text-center">
+                              {movement.product?.name}
+                            </td>
+                            <td className="text-center">
                               <span
                                 className={`badge rounded-pill bg-${
                                   movement.type === "in" ? "success" : "danger"
@@ -224,9 +240,13 @@ const Inventory = () => {
                                   : "Stock Out"}
                               </span>
                             </td>
-                            <td>{movement.quantity}</td>
-                            <td>{movement.reference}</td>
-                            <td>{movement.notes || "-"}</td>
+                            <td className="text-center">{movement.quantity}</td>
+                            <td className="text-center">
+                              {movement.reference}
+                            </td>
+                            <td className="text-center">
+                              {movement.notes || "-"}
+                            </td>
                           </tr>
                         ))
                       )}
@@ -261,9 +281,15 @@ const Inventory = () => {
                   <table className="table table-hover align-middle mb-0">
                     <thead className="bg-light">
                       <tr>
-                        <th>Product</th>
-                        <th>Stock</th>
-                        <th>Actions</th>
+                        <th className="text-center" style={{ width: "50%" }}>
+                          Product
+                        </th>
+                        <th className="text-center" style={{ width: "25%" }}>
+                          Stock
+                        </th>
+                        <th className="text-center" style={{ width: "25%" }}>
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -289,8 +315,8 @@ const Inventory = () => {
                       ) : (
                         filteredProducts.map((product) => (
                           <tr key={product.id}>
-                            <td>
-                              <div className="d-flex flex-column">
+                            <td className="text-center">
+                              <div className="d-flex flex-column align-items-center">
                                 <span className="fw-medium">
                                   {product.name}
                                 </span>
@@ -299,9 +325,11 @@ const Inventory = () => {
                                 </small>
                               </div>
                             </td>
-                            <td>
-                              <div className="d-flex align-items-center gap-2">
-                                <span>{product.stock_quantity}</span>
+                            <td className="text-center">
+                              <div className="d-flex flex-column align-items-center gap-2">
+                                <span className="fw-medium">
+                                  {product.stock_quantity}
+                                </span>
                                 {product.stock_quantity <=
                                   product.alert_threshold && (
                                   <span className="badge bg-warning rounded-pill">
@@ -310,14 +338,17 @@ const Inventory = () => {
                                 )}
                               </div>
                             </td>
-                            <td>
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-primary"
-                                onClick={() => handleAdjustStock(product)}
-                              >
-                                Adjust Stock
-                              </button>
+                            <td className="text-center">
+                              <div className="actions-group justify-content-center">
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-primary"
+                                  style={{ minWidth: "100px" }}
+                                  onClick={() => handleAdjustStock(product)}
+                                >
+                                  Adjust Stock
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -331,7 +362,7 @@ const Inventory = () => {
         </div>
       )}
 
-      {selectedProduct && (
+      {showAdjustModal && selectedProduct && (
         <StockAdjustmentModal
           show={showAdjustModal}
           onHide={() => {

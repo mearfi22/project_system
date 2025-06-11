@@ -1,43 +1,64 @@
 /* Page Layout */
-.transactions-page {
-  padding: 1rem;
-}
-
-.page-header {
-  margin-bottom: 2rem;
-}
-
-.page-header h1 {
-  font-size: 1.75rem;
-  margin: 0;
-  color: #2c3e50;
-}
-
-/* Filters Section */
-.filters-section {
-  background-color: #f8f9fa;
+.transactions-container.container-fluid {
   padding: 1.5rem;
-  border-radius: 0.5rem;
+}
+
+/* Card Styles */
+.card {
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   margin-bottom: 1.5rem;
+}
+
+.card-header {
+  background-color: transparent;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-title {
+  color: #2c3e50;
+  margin-bottom: 0;
 }
 
 /* Table Styles */
 .table {
   margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .table th {
   font-weight: 600;
   color: #2c3e50;
   border-bottom-width: 1px;
+  white-space: nowrap;
+  padding: 1rem;
+  background-color: #f8f9fa;
 }
 
 .table td {
   vertical-align: middle;
+  color: #2c3e50;
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .table-hover tbody tr:hover {
-  background-color: #f8f9fa;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.table .fw-medium {
+  font-weight: 500;
+}
+
+.table small.text-muted {
+  font-size: 0.75rem;
+  display: block;
+  margin-top: 0.25rem;
 }
 
 /* Status Badge */
@@ -51,6 +72,8 @@
   white-space: nowrap;
   vertical-align: baseline;
   border-radius: 0.25rem;
+  text-transform: capitalize;
+  min-width: 80px;
 }
 
 .status-badge.completed {
@@ -77,6 +100,11 @@
 
 .actions-group button {
   padding: 0.25rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 /* Transaction Modal */
@@ -176,18 +204,68 @@
   color: #6c757d;
 }
 
+.no-data i {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Form Controls */
+.input-group-text {
+  background-color: transparent;
+  border-right: none;
+}
+
+.form-control,
+.form-select {
+  border-color: #dee2e6;
+  padding: 0.5rem 0.75rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-control.border-start-0 {
+  border-left: none;
+}
+
+.form-control.border-start-0:focus {
+  border-left: none;
+  box-shadow: none;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
-  .filters-section .row {
-    row-gap: 1rem;
+  .container-fluid {
+    padding: 1rem;
+  }
+
+  .card {
+    margin-bottom: 1rem;
+  }
+
+  .table td,
+  .table th {
+    white-space: nowrap;
   }
 
   .actions-group {
     flex-wrap: wrap;
   }
 
-  .table td,
-  .table th {
-    white-space: nowrap;
+  .detail-item {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .detail-item .label {
+    font-size: 0.875rem;
+  }
+
+  .detail-item .value {
+    font-size: 1rem;
   }
 }

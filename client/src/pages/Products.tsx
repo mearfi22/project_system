@@ -2,107 +2,104 @@ import React, { useEffect, useState } from "react";
 import { Product } from "../interfaces/Products";
 import ProductService from "../services/ProductService";
 import ErrorHandler from "../handler/ErrorHandler";
+import { toast } from "react-toastify";
 import AddProductModal from "../components/modals/product/AddProductModal";
 import EditProductModal from "../components/modals/product/EditProductModal";
-import { toast } from "react-toastify";
-import Swal, { SweetAlertResult } from "sweetalert2";
-import AxiosInstance from "../utils/AxiosInstance";
+import DeleteConfirmationModal from "../components/modals/common/DeleteConfirmationModal";
+import { useAuth } from "../contexts/AuthContext";
+import "./Products.css";
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [showDeleted, setShowDeleted] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sortBy, setSortBy] = useState("");
+  const { hasPermission, user } = useAuth();
 
   useEffect(() => {
-    loadProducts();
-  }, [showDeleted]);
-
-  const loadProducts = async () => {
-    try {
-      setLoading(true);
-      const response = await AxiosInstance.get(
-        showDeleted ? "/api/products/deleted" : "/api/products"
-      );
-      setProducts(response.data.products || response.data);
-    } catch (error) {
-      ErrorHandler(error, null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleProductAdded = (message: string) => {
-    setShowAddModal(false);
-    loadProducts();
-    toast.success(message);
-  };
-
-  const handleProductUpdated = (updatedProduct: Product, message: string) => {
-    setShowEditModal(false);
-    setSelectedProduct(null);
-    setProducts((prevProducts) =>
-      prevProducts.map((product) =>
-        product.id === updatedProduct.id
-          ? { ...updatedProduct, active: updatedProduct.stock_quantity > 0 }
-          : product
-      )
+    console.log("Current user:", user);
+    console.log(
+      "Has update_product permission:",
+      hasPermission("update_product")
     );
-    toast.success(message);
+    loadProducts();
+  }, []);
+
+  const loadProducts = () => {
+    setLoading(true);
+    ProductService.loadProducts()
+      .then((res) => {
+        setProducts(res.data.products);
+      })
+      .catch((error) => {
+        ErrorHandler(error, null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
-  const handleEdit = (product: Product) => {
+  const handleAddProduct = () => {
+    setSelectedProduct(null);
+    setShowAddModal(true);
+  };
+
+  const handleEditProduct = (product: Product) => {
     setSelectedProduct(product);
     setShowEditModal(true);
   };
 
-  const handleDelete = (product: Product) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-    }).then((result: SweetAlertResult<any>) => {
-      if (result.isConfirmed) {
-        ProductService.deleteProduct(product.id)
-          .then((res) => {
-            loadProducts();
-            toast.success(res.data.message);
-          })
-          .catch((error) => {
-            ErrorHandler(error, null);
-          });
-      }
-    });
+  const handleDeleteClick = (product: Product) => {
+    setSelectedProduct(product);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteProduct = () => {
+    if (!selectedProduct) return;
+
+    ProductService.deleteProduct(selectedProduct.id)
+      .then(() => {
+        toast.success("Product deleted successfully");
+        loadProducts();
+        setShowDeleteModal(false);
+        setSelectedProduct(null);
+      })
+      .catch((error) => {
+        ErrorHandler(error, null);
+      });
+  };
+
+  const handleProductAdded = (message: string) => {
+    toast.success(message);
+    setShowAddModal(false);
+    loadProducts();
+  };
+
+  const handleProductUpdated = (product: Product, message: string) => {
+    toast.success(message);
+    setShowEditModal(false);
+    setSelectedProduct(null);
+    loadProducts();
   };
 
   const getStatusBadge = (product: Product) => {
-    if (showDeleted) {
-      return <span className="badge bg-secondary">Inactive</span>;
+    if (!product.active) {
+      return <span className="badge bg-danger">Inactive</span>;
     }
-    const isActive = product.stock_quantity > 0;
-    return (
-      <span
-        className={`badge rounded-pill ${
-          isActive ? "bg-success" : "bg-danger"
-        }`}
-      >
-        {isActive ? "Active" : "Out of Stock"}
-      </span>
-    );
+    if (product.stock_quantity <= product.alert_threshold) {
+      return <span className="badge bg-warning">Low Stock</span>;
+    }
+    return <span className="badge bg-success">Active</span>;
   };
 
-  // Get unique categories from products
+  // Get unique categories
   const categories = Array.from(
-    new Set(products.map((product) => product.category || "Uncategorized"))
+    new Set(products.map((product) => product.category).filter(Boolean))
   );
 
   // Filter and sort products
@@ -133,39 +130,26 @@ const Products: React.FC = () => {
     });
 
   return (
-    <div className="container-fluid px-4">
+    <div className="container-fluid products-container px-4">
       {/* Header Section */}
       <div className="card shadow-sm border-0 mb-4">
         <div className="card-header bg-white py-3">
           <div className="d-flex justify-content-between align-items-center">
             <div>
-              <h5 className="mb-0 text-primary">Products Management</h5>
+              <h5 className="mb-0 text-primary">Products</h5>
               <p className="text-muted mb-0 small">
                 Manage your product catalog
               </p>
             </div>
-            <div className="d-flex gap-2">
+            {hasPermission("create_product") && (
               <button
-                className={`btn ${
-                  showDeleted ? "btn-outline-secondary" : "btn-outline-info"
-                } d-flex align-items-center gap-2`}
-                onClick={() => setShowDeleted(!showDeleted)}
+                className="btn btn-primary d-flex align-items-center gap-2"
+                onClick={handleAddProduct}
               >
-                <i
-                  className={`bi ${showDeleted ? "bi-eye" : "bi-archive"}`}
-                ></i>
-                {showDeleted ? "Show Active Products" : "Show Archived"}
+                <i className="bi bi-plus-circle"></i>
+                Add Product
               </button>
-              {!showDeleted && (
-                <button
-                  className="btn btn-primary d-flex align-items-center gap-2"
-                  onClick={() => setShowAddModal(true)}
-                >
-                  <i className="bi bi-plus-circle"></i>
-                  Add Product
-                </button>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -221,113 +205,150 @@ const Products: React.FC = () => {
       {/* Products Table */}
       <div className="card shadow-sm border-0">
         <div className="card-body">
-          {loading ? (
-            <div className="text-center py-5">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </div>
-            </div>
-          ) : (
-            <div className="table-responsive">
-              <table className="table table-hover align-middle mb-0">
-                <thead className="bg-light">
+          <div className="table-responsive">
+            <table className="table table-hover align-middle mb-0">
+              <thead className="bg-light">
+                <tr>
+                  <th className="text-center" style={{ width: "30%" }}>
+                    Product Info
+                  </th>
+                  <th className="text-center" style={{ width: "15%" }}>
+                    Category
+                  </th>
+                  <th className="text-center" style={{ width: "15%" }}>
+                    Price
+                  </th>
+                  <th className="text-center" style={{ width: "15%" }}>
+                    Stock
+                  </th>
+                  <th className="text-center" style={{ width: "10%" }}>
+                    Status
+                  </th>
+                  <th className="text-center" style={{ width: "15%" }}>
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
                   <tr>
-                    <th className="text-nowrap">Product Info</th>
-                    <th className="text-nowrap">Category</th>
-                    <th className="text-nowrap">Price</th>
-                    <th className="text-nowrap">Stock</th>
-                    <th className="text-nowrap">Status</th>
-                    {!showDeleted && <th className="text-nowrap">Actions</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={showDeleted ? 5 : 6}
-                        className="text-center py-4 text-muted"
+                    <td colSpan={6} className="text-center py-4">
+                      <div
+                        className="spinner-border text-primary"
+                        role="status"
                       >
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredProducts.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-4">
+                      <div className="no-data">
                         {searchTerm || categoryFilter ? (
                           <>
                             <i className="bi bi-search display-6 d-block mb-2"></i>
-                            No products found matching your filters
+                            <p className="mb-0">
+                              No products found with the current filters
+                            </p>
                           </>
                         ) : (
                           <>
                             <i className="bi bi-box display-6 d-block mb-2"></i>
-                            No products available
+                            <p className="mb-0">No products available</p>
                           </>
                         )}
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredProducts.map((product) => (
+                    <tr key={product.id}>
+                      <td className="text-center">
+                        <div className="d-flex flex-column align-items-center">
+                          <span className="fw-medium">{product.name}</span>
+                          <small className="text-muted d-block">
+                            {product.description || "No description"}
+                          </small>
+                          {product.barcode && (
+                            <small className="text-muted d-block">
+                              Barcode: {product.barcode}
+                            </small>
+                          )}
+                        </div>
+                      </td>
+                      <td className="text-center">
+                        <span className="badge bg-light text-dark">
+                          {product.category || "Uncategorized"}
+                        </span>
+                      </td>
+                      <td className="text-center">
+                        ₱{Number(product.price).toFixed(2)}
+                      </td>
+                      <td className="text-center">{product.stock_quantity}</td>
+                      <td className="text-center">{getStatusBadge(product)}</td>
+                      <td className="text-center">
+                        <div className="d-flex justify-content-center gap-2">
+                          <button
+                            className="btn btn-sm btn-primary"
+                            style={{ minWidth: "70px" }}
+                            onClick={() => handleEditProduct(product)}
+                          >
+                            Edit
+                          </button>
+                          {hasPermission("delete_product") && (
+                            <button
+                              className="btn btn-sm btn-danger"
+                              style={{ minWidth: "70px" }}
+                              onClick={() => handleDeleteClick(product)}
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
-                  ) : (
-                    filteredProducts.map((product) => (
-                      <tr key={product.id}>
-                        <td>
-                          <div className="d-flex flex-column">
-                            <span className="fw-medium">{product.name}</span>
-                            <small className="text-muted">
-                              {product.description || "No description"}
-                            </small>
-                            {product.barcode && (
-                              <small className="text-muted">
-                                Barcode: {product.barcode}
-                              </small>
-                            )}
-                          </div>
-                        </td>
-                        <td>
-                          <span className="badge bg-light text-dark">
-                            {product.category || "Uncategorized"}
-                          </span>
-                        </td>
-                        <td>₱{Number(product.price).toFixed(2)}</td>
-                        <td>{product.stock_quantity}</td>
-                        <td>{getStatusBadge(product)}</td>
-                        {!showDeleted && (
-                          <td>
-                            <div className="d-flex gap-2">
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-primary"
-                                onClick={() => handleEdit(product)}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-danger"
-                                onClick={() => handleDelete(product)}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        )}
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
+      {/* Modals */}
       <AddProductModal
         show={showAddModal}
-        onHide={() => setShowAddModal(false)}
+        onHide={() => {
+          setShowAddModal(false);
+          setSelectedProduct(null);
+        }}
         onProductAdded={handleProductAdded}
       />
 
       <EditProductModal
         show={showEditModal}
-        product={selectedProduct}
         onHide={() => {
           setShowEditModal(false);
           setSelectedProduct(null);
         }}
+        product={selectedProduct}
         onProductUpdated={handleProductUpdated}
+      />
+
+      <DeleteConfirmationModal
+        show={showDeleteModal}
+        onHide={() => {
+          setShowDeleteModal(false);
+          setSelectedProduct(null);
+        }}
+        onConfirm={handleDeleteProduct}
+        title="Delete Product"
+        message={
+          selectedProduct?.name
+            ? `Are you sure you want to delete ${selectedProduct.name}?`
+            : ""
+        }
       />
     </div>
   );

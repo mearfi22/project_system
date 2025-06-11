@@ -59,21 +59,18 @@ interface FeedbackData {
   };
 }
 
+interface InventoryItem {
+  id: number;
+  name: string;
+  stock_quantity: number;
+  alert_threshold: number;
+  stock_value?: number;
+  price?: number;
+}
+
 interface InventoryData {
-  current_inventory: {
-    id: number;
-    name: string;
-    stock_quantity: number;
-    alert_threshold: number;
-    price: number;
-    stock_value: number;
-  }[];
-  low_stock_alerts: {
-    id: number;
-    name: string;
-    stock_quantity: number;
-    alert_threshold: number;
-  }[];
+  current_inventory: InventoryItem[];
+  low_stock_alerts: InventoryItem[];
   inventory_movement: {
     product_id: number;
     product: {
@@ -210,13 +207,13 @@ const Reports = () => {
       const validatedInventory = {
         ...response.data,
         current_inventory: response.data.current_inventory.map(
-          (item: InventoryData["current_inventory"][0]) => ({
+          (item: InventoryItem) => ({
             ...item,
             name: item.name || "Unnamed Product",
           })
         ),
         low_stock_alerts: response.data.low_stock_alerts.map(
-          (item: InventoryData["low_stock_alerts"][0]) => ({
+          (item: InventoryItem) => ({
             ...item,
             name: item.name || "Unnamed Product",
           })
@@ -564,10 +561,7 @@ const Reports = () => {
 
   if (loading) {
     return (
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ minHeight: "400px" }}
-      >
+      <div className="reports-loading">
         <div className="spinner-border" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -576,217 +570,294 @@ const Reports = () => {
   }
 
   if (error) {
-    return <div className="alert alert-danger">{error}</div>;
+    return (
+      <div className="reports-error">
+        <i className="bi bi-exclamation-triangle me-2"></i>
+        {error}
+      </div>
+    );
   }
+
+  const renderSalesReport = () => {
+    return (
+      <>
+        <div className="summary-stats">
+          <div className="stat-card">
+            <div className="stat-title">Total Sales</div>
+            <div className="stat-value">
+              ₱{salesData?.summary?.total_sales?.toFixed(2) || "0.00"}
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-title">Transactions</div>
+            <div className="stat-value">
+              {salesData?.summary?.total_transactions || 0}
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-title">Average Sale</div>
+            <div className="stat-value">
+              ₱{salesData?.summary?.average_sale?.toFixed(2) || "0.00"}
+            </div>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-md-8">
+            <div className="chart-card">
+              <div className="card-body">
+                <div className="chart-controls">
+                  <h5 className="card-title">Sales Trend</h5>
+                  <div className="btn-group">
+                    <button
+                      type="button"
+                      className={`btn ${
+                        dateRange === "today"
+                          ? "btn-primary"
+                          : "btn-outline-primary"
+                      }`}
+                      onClick={() => setDateRange("today")}
+                    >
+                      Today
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn ${
+                        dateRange === "week"
+                          ? "btn-primary"
+                          : "btn-outline-primary"
+                      }`}
+                      onClick={() => setDateRange("week")}
+                    >
+                      Week
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn ${
+                        dateRange === "month"
+                          ? "btn-primary"
+                          : "btn-outline-primary"
+                      }`}
+                      onClick={() => setDateRange("month")}
+                    >
+                      Month
+                    </button>
+                  </div>
+                </div>
+                <Line data={salesChartData} options={chartOptions} />
+              </div>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="chart-card">
+              <div className="card-body">
+                <div className="chart-controls">
+                  <h5 className="card-title">Top Products</h5>
+                  <div className="btn-group">
+                    <button
+                      type="button"
+                      className={`btn ${
+                        productsView === "revenue"
+                          ? "btn-primary"
+                          : "btn-outline-primary"
+                      }`}
+                      onClick={() => setProductsView("revenue")}
+                    >
+                      Revenue
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn ${
+                        productsView === "quantity"
+                          ? "btn-primary"
+                          : "btn-outline-primary"
+                      }`}
+                      onClick={() => setProductsView("quantity")}
+                    >
+                      Quantity
+                    </button>
+                  </div>
+                </div>
+                <Bar data={topProductsChartData} options={chartOptions} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-12">
+            <div className="table-card">
+              <div className="card-header">
+                <h5>Top Products Details</h5>
+              </div>
+              <div className="card-body">
+                <div className="table-responsive">
+                  <table className="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th className="text-end">Quantity Sold</th>
+                        <th className="text-end">Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {salesData?.top_products?.map((product) => (
+                        <tr key={product?.product_id || "unknown"}>
+                          <td>{product?.product_name || "Unknown Product"}</td>
+                          <td className="text-end">
+                            {product?.total_quantity || 0}
+                          </td>
+                          <td className="text-end">
+                            ₱{Number(product?.total_revenue || 0).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  const renderInventoryReport = () => {
+    return (
+      <>
+        <div className="summary-stats">
+          <div className="stat-card">
+            <div className="stat-title">Total Products</div>
+            <div className="stat-value">
+              {inventoryData?.summary?.total_products || 0}
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-title">Total Stock Value</div>
+            <div className="stat-value">
+              ₱{inventoryData?.summary?.total_stock_value?.toFixed(2) || "0.00"}
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-title">Low Stock Items</div>
+            <div className="stat-value">
+              {inventoryData?.summary?.low_stock_count || 0}
+            </div>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-12">
+            <div className="table-card">
+              <div className="card-header d-flex justify-content-between align-items-center">
+                <h5>Inventory Status</h5>
+                <div className="btn-group">
+                  <button
+                    type="button"
+                    className={`btn ${
+                      inventoryView === "total"
+                        ? "btn-primary"
+                        : "btn-outline-primary"
+                    }`}
+                    onClick={() => setInventoryView("total")}
+                  >
+                    All Items
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn ${
+                      inventoryView === "low"
+                        ? "btn-primary"
+                        : "btn-outline-primary"
+                    }`}
+                    onClick={() => setInventoryView("low")}
+                  >
+                    Low Stock
+                  </button>
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="table-responsive">
+                  <table className="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th className="text-end">Stock</th>
+                        <th className="text-end">Alert Threshold</th>
+                        <th className="text-end">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(inventoryView === "low"
+                        ? inventoryData?.low_stock_alerts
+                        : inventoryData?.current_inventory
+                      )?.map((item) => (
+                        <tr key={item.id}>
+                          <td>{item.name}</td>
+                          <td className="text-end">{item.stock_quantity}</td>
+                          <td className="text-end">{item.alert_threshold}</td>
+                          <td className="text-end">
+                            ₱{Number(item.stock_value || 0).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
 
   return (
     <div className="container-fluid py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="reports-header">
         <h1>Reports</h1>
+        <p>View detailed insights about your business performance</p>
       </div>
 
-      <div className="row mb-4">
-        <div className="col-md-6">
-          <div className="btn-group">
-            <button
-              className={`btn btn${
-                selectedReport === "sales" ? "" : "-outline"
-              }-primary`}
-              onClick={() => setSelectedReport("sales")}
-            >
-              Sales Report
-            </button>
-            <button
-              className={`btn btn${
-                selectedReport === "inventory" ? "" : "-outline"
-              }-primary`}
-              onClick={() => setSelectedReport("inventory")}
-            >
-              Inventory Report
-            </button>
-            <button
-              className={`btn btn${
-                selectedReport === "feedback" ? "" : "-outline"
-              }-primary`}
-              onClick={() => setSelectedReport("feedback")}
-            >
-              Customer Feedback
-            </button>
-          </div>
+      <div className="report-nav">
+        <div className="btn-group">
+          <button
+            type="button"
+            className={`btn ${
+              selectedReport === "sales" ? "btn-primary" : "btn-outline-primary"
+            }`}
+            onClick={() => setSelectedReport("sales")}
+          >
+            Sales Report
+          </button>
+          <button
+            type="button"
+            className={`btn ${
+              selectedReport === "inventory"
+                ? "btn-primary"
+                : "btn-outline-primary"
+            }`}
+            onClick={() => setSelectedReport("inventory")}
+          >
+            Inventory Report
+          </button>
+          <button
+            type="button"
+            className={`btn ${
+              selectedReport === "feedback"
+                ? "btn-primary"
+                : "btn-outline-primary"
+            }`}
+            onClick={() => setSelectedReport("feedback")}
+          >
+            Feedback Report
+          </button>
         </div>
       </div>
 
-      {selectedReport === "sales" && (
-        <>
-          {/* Sales Summary Cards */}
-          <div className="row mb-4">
-            <div className="col-md-4">
-              <div className="card">
-                <div className="card-body">
-                  <h5 className="card-title">Total Sales</h5>
-                  <p className="card-text display-6">
-                    ₱{salesData?.summary?.total_sales?.toFixed(2) || "0.00"}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="card">
-                <div className="card-body">
-                  <h5 className="card-title">Total Transactions</h5>
-                  <p className="card-text display-6">
-                    {salesData?.summary?.total_transactions || 0}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="card">
-                <div className="card-body">
-                  <h5 className="card-title">Average Sale</h5>
-                  <p className="card-text display-6">
-                    ₱{salesData?.summary?.average_sale?.toFixed(2) || "0.00"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Sales Charts */}
-          <div className="row">
-            <div className="col-md-8">
-              <div className="card mb-4">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5 className="card-title mb-0">Sales Trend</h5>
-                    <div className="btn-group">
-                      <button
-                        className={`btn btn${
-                          salesView === "sales" ? "" : "-outline"
-                        }-secondary`}
-                        onClick={() => setSalesView("sales")}
-                      >
-                        Sales Overview
-                      </button>
-                      <button
-                        className={`btn btn${
-                          salesView === "transactions" ? "" : "-outline"
-                        }-secondary`}
-                        onClick={() => setSalesView("transactions")}
-                      >
-                        Transactions
-                      </button>
-                    </div>
-                  </div>
-                  <Line data={salesChartData} options={chartOptions} />
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="card mb-4">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5 className="card-title mb-0">Top Products</h5>
-                    <div className="btn-group">
-                      <button
-                        className={`btn btn${
-                          productsView === "revenue" ? "" : "-outline"
-                        }-secondary`}
-                        onClick={() => setProductsView("revenue")}
-                      >
-                        Revenue
-                      </button>
-                      <button
-                        className={`btn btn${
-                          productsView === "quantity" ? "" : "-outline"
-                        }-secondary`}
-                        onClick={() => setProductsView("quantity")}
-                      >
-                        Quantity
-                      </button>
-                    </div>
-                  </div>
-                  <Bar data={topProductsChartData} options={chartOptions} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {selectedReport === "inventory" && (
-        <>
-          {/* Inventory Summary Cards */}
-          <div className="row mb-4">
-            <div className="col-md-4">
-              <div className="card">
-                <div className="card-body">
-                  <h5 className="card-title">Total Products</h5>
-                  <p className="card-text display-6">
-                    {inventoryData?.summary?.total_products || 0}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="card">
-                <div className="card-body">
-                  <h5 className="card-title">Total Stock Value</h5>
-                  <p className="card-text display-6">
-                    ₱
-                    {inventoryData?.summary?.total_stock_value?.toFixed(2) ||
-                      "0.00"}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="card">
-                <div className="card-body">
-                  <h5 className="card-title">Low Stock Count</h5>
-                  <p className="card-text display-6">
-                    {inventoryData?.summary?.low_stock_count || 0}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Inventory Charts */}
-          <div className="row">
-            <div className="col-md-8">
-              <div className="card mb-4">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5 className="card-title mb-0">Inventory Category</h5>
-                  </div>
-                  <Bar
-                    data={inventoryCategoryChartData}
-                    options={chartOptions}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="card mb-4">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5 className="card-title mb-0">Sort Low Stock Items</h5>
-                  </div>
-                  <div className="d-flex justify-content-center">
-                    {getSortedLowStockItems().map((item) => (
-                      <div key={item.id} className="mx-2">
-                        {item.name}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
+      {selectedReport === "sales" && renderSalesReport()}
+      {selectedReport === "inventory" && renderInventoryReport()}
       {selectedReport === "feedback" && renderFeedbackReport()}
     </div>
   );

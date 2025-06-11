@@ -128,8 +128,8 @@ const Transactions = () => {
         size="lg"
         className="transaction-modal"
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Transaction Details</Modal.Title>
+        <Modal.Header closeButton className="bg-white py-3">
+          <Modal.Title className="mb-0">Transaction Details</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="transaction-details">
@@ -182,8 +182,8 @@ const Transactions = () => {
             <div className="items-section">
               <h6 className="section-title">Items</h6>
               <div className="table-responsive">
-                <table className="table table-hover">
-                  <thead className="table-light">
+                <table className="table table-hover align-middle mb-0">
+                  <thead className="bg-light">
                     <tr>
                       <th>Product</th>
                       <th className="text-center">Quantity</th>
@@ -272,8 +272,8 @@ const Transactions = () => {
         onHide={() => setShowVoidModal(false)}
         className="void-modal"
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Void Transaction</Modal.Title>
+        <Modal.Header closeButton className="bg-white py-3">
+          <Modal.Title className="mb-0">Void Transaction</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="alert alert-warning">
@@ -320,71 +320,98 @@ const Transactions = () => {
   };
 
   return (
-    <div className="transactions-page">
-      <div className="page-header">
-        <h1>Transactions</h1>
-      </div>
-
-      <div className="card">
-        <div className="card-body">
-          <div className="filters-section mb-4">
-            <div className="row g-3">
-              <div className="col-md-3">
-                <InputGroup>
-                  <InputGroup.Text>
-                    <FaSearch />
-                  </InputGroup.Text>
-                  <Form.Control
-                    type="text"
-                    placeholder="Search transactions..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </InputGroup>
-              </div>
-              <div className="col-md-3">
-                <Form.Control
-                  type="date"
-                  value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
-                  className="form-control"
-                />
-              </div>
-              <div className="col-md-3">
-                <Form.Select
-                  value={paymentMethodFilter}
-                  onChange={(e) => setPaymentMethodFilter(e.target.value)}
-                  className="form-select"
-                >
-                  <option value="">All Payment Methods</option>
-                  <option value="cash">Cash</option>
-                </Form.Select>
-              </div>
-              <div className="col-md-3">
-                <Form.Select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="form-select"
-                >
-                  <option value="">All Status</option>
-                  <option value="completed">Completed</option>
-                  <option value="pending">Pending</option>
-                  <option value="voided">Voided</option>
-                </Form.Select>
-              </div>
+    <div className="container-fluid transactions-container px-4">
+      {/* Header Section */}
+      <div className="card shadow-sm border-0 mb-4">
+        <div className="card-header bg-white py-3">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 className="mb-0 text-primary">Transaction History</h5>
+              <p className="text-muted mb-0 small">
+                View and manage your transaction records
+              </p>
             </div>
           </div>
+        </div>
+      </div>
 
+      {/* Filters Section */}
+      <div className="card shadow-sm border-0 mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col-md-3">
+              <div className="input-group">
+                <span className="input-group-text bg-white border-end-0">
+                  <FaSearch className="text-muted" />
+                </span>
+                <Form.Control
+                  type="text"
+                  placeholder="Search transactions..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="border-start-0 ps-0"
+                />
+              </div>
+            </div>
+            <div className="col-md-3">
+              <Form.Control
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="form-control"
+              />
+            </div>
+            <div className="col-md-3">
+              <Form.Select
+                value={paymentMethodFilter}
+                onChange={(e) => setPaymentMethodFilter(e.target.value)}
+                className="form-select"
+              >
+                <option value="">All Payment Methods</option>
+                <option value="cash">Cash</option>
+              </Form.Select>
+            </div>
+            <div className="col-md-3">
+              <Form.Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="form-select"
+              >
+                <option value="">All Status</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+                <option value="voided">Voided</option>
+              </Form.Select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Transactions Table */}
+      <div className="card shadow-sm border-0">
+        <div className="card-body">
           <div className="table-responsive">
-            <table className="table table-hover">
-              <thead className="table-light">
+            <table className="table table-hover align-middle mb-0">
+              <thead className="bg-light">
                 <tr>
-                  <th>Reference #</th>
-                  <th>Date</th>
-                  <th>Customer</th>
-                  <th className="text-end">Total</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th className="text-center" style={{ width: "20%" }}>
+                    Reference #
+                  </th>
+                  <th className="text-center" style={{ width: "15%" }}>
+                    Date
+                  </th>
+                  <th className="text-center" style={{ width: "20%" }}>
+                    Customer
+                  </th>
+                  <th className="text-center" style={{ width: "15%" }}>
+                    Total
+                  </th>
+                  <th className="text-center" style={{ width: "15%" }}>
+                    Status
+                  </th>
+                  <th className="text-center" style={{ width: "15%" }}>
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -403,33 +430,59 @@ const Transactions = () => {
                   <tr>
                     <td colSpan={6} className="text-center py-4">
                       <div className="no-data">
-                        <p className="mb-0">No transactions found</p>
+                        {searchTerm ||
+                        dateFilter ||
+                        paymentMethodFilter ||
+                        statusFilter ? (
+                          <>
+                            <i className="bi bi-search display-6 d-block mb-2"></i>
+                            <p className="mb-0">
+                              No transactions found with the current filters
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <i className="bi bi-receipt display-6 d-block mb-2"></i>
+                            <p className="mb-0">No transactions recorded yet</p>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
                 ) : (
                   filteredTransactions.map((transaction) => (
                     <tr key={transaction.id}>
-                      <td>{transaction.reference_number}</td>
-                      <td>
+                      <td className="text-center">
+                        <div className="d-flex flex-column align-items-center">
+                          <span className="fw-medium">
+                            {transaction.reference_number}
+                          </span>
+                          <small className="text-muted">
+                            ID: {transaction.id}
+                          </small>
+                        </div>
+                      </td>
+                      <td className="text-center">
                         {format(
                           new Date(transaction.created_at),
                           "MMM d, yyyy"
                         )}
                       </td>
-                      <td>{transaction.customer_name || "Walk-in Customer"}</td>
-                      <td className="text-end">
+                      <td className="text-center">
+                        {transaction.customer_name || "Walk-in Customer"}
+                      </td>
+                      <td className="text-center">
                         ₱{Number(transaction.total_amount).toFixed(2)}
                       </td>
-                      <td>
+                      <td className="text-center">
                         <span
                           className={`status-badge ${transaction.payment_status}`}
                         >
                           {transaction.payment_status}
                         </span>
                       </td>
-                      <td>
-                        <div className="actions-group">
+                      <td className="text-center">
+                        <div className="actions-group justify-content-center">
                           <Button
                             variant="outline-info"
                             size="sm"
@@ -467,6 +520,7 @@ const Transactions = () => {
           </div>
         </div>
       </div>
+
       {renderViewModal()}
       {renderVoidModal()}
     </div>

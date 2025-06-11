@@ -109,27 +109,37 @@ const UsersTable = ({
       </div>
 
       <div className="table-responsive">
-        <table className="table table-hover align-middle">
+        <table className="table table-hover align-middle mb-0">
           <thead className="bg-light">
             <tr>
-              <th className="text-nowrap">User Info</th>
-              <th className="text-nowrap">Contact Details</th>
-              <th className="text-nowrap">Role</th>
-              <th className="text-nowrap">Actions</th>
+              <th className="text-center" style={{ width: "35%" }}>
+                User Info
+              </th>
+              <th className="text-center" style={{ width: "30%" }}>
+                Contact Details
+              </th>
+              <th className="text-center" style={{ width: "15%" }}>
+                Role
+              </th>
+              <th className="text-center" style={{ width: "20%" }}>
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {state.loadingUsers ? (
               <tr>
                 <td colSpan={4} className="text-center py-4">
-                  <Spinner />
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
                 </td>
               </tr>
             ) : filteredUsers.length > 0 ? (
-              filteredUsers.map((user, index) => (
+              filteredUsers.map((user) => (
                 <tr key={user.user_id}>
-                  <td>
-                    <div className="d-flex flex-column">
+                  <td className="text-center">
+                    <div className="d-flex flex-column align-items-center">
                       <span className="fw-medium">
                         {handleUsersFullName(user)}
                       </span>
@@ -139,15 +149,15 @@ const UsersTable = ({
                       <small className="text-muted">{user.address}</small>
                     </div>
                   </td>
-                  <td>
-                    <div className="d-flex flex-column">
+                  <td className="text-center">
+                    <div className="d-flex flex-column align-items-center">
                       <span>{user.email}</span>
                       <small className="text-muted">
                         {user.contact_number}
                       </small>
                     </div>
                   </td>
-                  <td>
+                  <td className="text-center">
                     <span
                       className={`badge rounded-pill bg-${
                         user.role.name === "admin"
@@ -161,11 +171,12 @@ const UsersTable = ({
                         user.role.name.slice(1)}
                     </span>
                   </td>
-                  <td>
-                    <div className="d-flex gap-2">
+                  <td className="text-center">
+                    <div className="d-flex justify-content-center gap-2">
                       <button
                         type="button"
                         className="btn btn-sm btn-primary"
+                        style={{ minWidth: "70px" }}
                         onClick={() => onEditUser(user)}
                       >
                         Edit
@@ -173,6 +184,7 @@ const UsersTable = ({
                       <button
                         type="button"
                         className="btn btn-sm btn-danger"
+                        style={{ minWidth: "70px" }}
                         onClick={() => onDeleteUser(user)}
                       >
                         Delete
@@ -183,18 +195,22 @@ const UsersTable = ({
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="text-center py-4 text-muted">
-                  {state.searchTerm ? (
-                    <>
-                      <i className="bi bi-search display-6 d-block mb-2"></i>
-                      No users found matching "{state.searchTerm}"
-                    </>
-                  ) : (
-                    <>
-                      <i className="bi bi-people display-6 d-block mb-2"></i>
-                      No users available
-                    </>
-                  )}
+                <td colSpan={4} className="text-center py-4">
+                  <div className="no-data">
+                    {state.searchTerm ? (
+                      <>
+                        <i className="bi bi-search display-6 d-block mb-2"></i>
+                        <p className="mb-0">
+                          No users found matching "{state.searchTerm}"
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-people display-6 d-block mb-2"></i>
+                        <p className="mb-0">No users available</p>
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
             )}

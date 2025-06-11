@@ -34,20 +34,28 @@ const Users = () => {
 
   return (
     <div className="container-fluid px-4">
+      {/* Header Section */}
       <div className="card shadow-sm border-0 mb-4">
         <div className="card-header bg-white py-3">
           <div className="d-flex justify-content-between align-items-center">
-            <h5 className="mb-0 text-primary">Users Management</h5>
+            <div>
+              <h5 className="mb-0 text-primary">Users Management</h5>
+              <p className="text-muted mb-0 small">Manage your system users</p>
+            </div>
             <button
               type="button"
               className="btn btn-primary d-flex align-items-center gap-2"
               onClick={() => setOpenAddUserModal(true)}
             >
               <i className="bi bi-plus-circle"></i>
-              Add New User
+              Add User
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Users Table Card */}
+      <div className="card shadow-sm border-0">
         <div className="card-body">
           <UsersTable
             refreshUsers={refreshUsers}
@@ -57,6 +65,7 @@ const Users = () => {
         </div>
       </div>
 
+      {/* Modals */}
       <AddUserModal
         showModal={openAddUserModal}
         onRefreshUsers={() => setRefreshUsers(!refreshUsers)}

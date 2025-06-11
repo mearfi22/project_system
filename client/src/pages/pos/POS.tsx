@@ -6,6 +6,7 @@ import { useSettings } from "../../contexts/SettingsContext";
 import ErrorHandler from "../../handler/ErrorHandler";
 import { toast } from "react-toastify";
 import PaymentModal from "../../components/modals/pos/PaymentModal";
+import "./POS.css";
 
 const POS: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -129,19 +130,19 @@ const POS: React.FC = () => {
   );
 
   return (
-    <div className="row h-100 g-0">
+    <div className="pos-container row g-0">
       {/* Products Section */}
-      <div className="col-md-8 h-100 d-flex flex-column">
-        <div className="p-3 bg-light border-bottom">
+      <div className="col-md-8 h-100 d-flex flex-column products-section">
+        <div className="search-section">
           <div className="row g-2">
             <div className="col-md-8">
               <div className="input-group">
-                <span className="input-group-text">
+                <span className="input-group-text bg-white border-end-0">
                   <i className="bi bi-search"></i>
                 </span>
                 <input
                   type="text"
-                  className="form-control form-control-lg"
+                  className="form-control search-input border-start-0 ps-0"
                   placeholder="Search by name or barcode..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -150,7 +151,7 @@ const POS: React.FC = () => {
             </div>
             <div className="col-md-4">
               <select
-                className="form-select form-select-lg"
+                className="form-select category-select"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
@@ -165,15 +166,23 @@ const POS: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex-grow-1 overflow-auto p-3">
+        <div className="flex-grow-1 overflow-auto p-3 products-grid">
           {loading ? (
-            <div className="text-center py-5">
+            <div className="loading-spinner">
               <div className="spinner-border" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="alert alert-info">No products found</div>
+            <div className="empty-products">
+              <i className="bi bi-box display-1 mb-3"></i>
+              <p className="lead mb-0">No products found</p>
+              {searchTerm && (
+                <p className="text-muted">
+                  Try adjusting your search or filters
+                </p>
+              )}
+            </div>
           ) : (
             <div className="row g-3">
               {filteredProducts.map((product) => {
@@ -181,7 +190,7 @@ const POS: React.FC = () => {
                 return (
                   <div key={product.id} className="col-md-3">
                     <div
-                      className={`card h-100 shadow-sm product-card ${
+                      className={`card product-card ${
                         availableStock === 0 ? "opacity-75" : ""
                       }`}
                       onClick={() => handleAddToCart(product)}
@@ -189,18 +198,18 @@ const POS: React.FC = () => {
                         cursor: availableStock > 0 ? "pointer" : "not-allowed",
                       }}
                     >
-                      <div className="card-body d-flex flex-column">
+                      <div className="card-body">
                         <div className="d-flex justify-content-between align-items-start mb-2">
                           <h6 className="card-title mb-0">{product.name}</h6>
-                          <span className="badge bg-primary ms-1">
+                          <span className="badge bg-primary">
                             {product.category || "Uncategorized"}
                           </span>
                         </div>
                         <p className="card-text text-muted small mb-2">
-                          Barcode: {product.barcode || "N/A"}
+                          {product.barcode || "No barcode"}
                         </p>
                         <div className="mt-auto">
-                          <p className="card-text text-success fw-bold mb-1">
+                          <p className="price mb-1">
                             ₱{Number(product.price).toFixed(2)}
                           </p>
                           <span
@@ -224,50 +233,48 @@ const POS: React.FC = () => {
       </div>
 
       {/* Cart Section */}
-      <div className="col-md-4 h-100 d-flex flex-column bg-light border-start">
-        <div className="p-3 border-bottom bg-white">
-          <h4 className="mb-0 d-flex align-items-center">
+      <div className="col-md-4 h-100 d-flex flex-column cart-section">
+        <div className="cart-header">
+          <h5 className="mb-0 d-flex align-items-center">
             <i className="bi bi-cart3 me-2"></i>Shopping Cart
-          </h4>
+          </h5>
         </div>
 
-        <div className="flex-grow-1 overflow-auto p-3">
+        <div className="flex-grow-1 overflow-auto p-3 cart-items">
           {items.length === 0 ? (
-            <div className="text-center text-muted py-5">
-              <i className="bi bi-cart3 display-1 mb-3 d-block"></i>
+            <div className="empty-cart">
+              <i className="bi bi-cart3 display-1"></i>
               <p className="lead mb-1">Your cart is empty</p>
-              <p className="small text-muted mb-0">
+              <p className="text-muted mb-0">
                 Add products by clicking on them
               </p>
             </div>
           ) : (
-            <div className="list-group">
+            <div className="cart-items-list">
               {items.map((item) => (
-                <div
-                  key={item.id}
-                  className="list-group-item list-group-item-action p-3 border rounded-3 mb-2 shadow-sm"
-                >
+                <div key={item.id} className="cart-item p-3">
                   <div className="d-flex justify-content-between align-items-start mb-2">
                     <div>
-                      <h6 className="mb-0 fw-bold">{item.product.name}</h6>
+                      <h6 className="mb-0">{item.product.name}</h6>
                       <small className="text-muted">
                         ₱{Number(item.product.price).toFixed(2)} each
                       </small>
                     </div>
                     <button
-                      className="btn btn-link text-danger p-0"
+                      className="btn btn-link remove-btn p-0"
                       onClick={() => removeItem(item.id)}
                     >
-                      Remove item
+                      <i className="bi bi-x-lg"></i>
                     </button>
                   </div>
 
                   <div className="row g-2">
                     <div className="col-6">
-                      <div className="input-group">
+                      <div className="input-group input-group-sm">
+                        <span className="input-group-text">Qty</span>
                         <input
                           type="number"
-                          className="form-control text-center"
+                          className="form-control quantity-input text-center"
                           value={item.quantity || ""}
                           min="1"
                           max={item.product.stock_quantity}
@@ -289,11 +296,11 @@ const POS: React.FC = () => {
                       </div>
                     </div>
                     <div className="col-6">
-                      <div className="input-group">
+                      <div className="input-group input-group-sm">
                         <input
                           type="number"
-                          className="form-control"
-                          placeholder="Discount %"
+                          className="form-control discount-input"
+                          placeholder="Discount"
                           value={item.discountPercentage || ""}
                           min="0"
                           max="100"
@@ -317,20 +324,19 @@ const POS: React.FC = () => {
                   <div className="d-flex justify-content-between align-items-baseline mt-2">
                     <div>
                       {(item.discount ?? 0) > 0 && (
-                        <small className="text-success d-block">
-                          <i className="bi bi-tag-fill me-1"></i>-
-                          {item.discountPercentage}% (-₱
-                          {(item.discount ?? 0).toFixed(2)})
+                        <small className="text-success">
+                          <i className="bi bi-tag-fill me-1"></i>
+                          {item.discountPercentage}% off
                         </small>
                       )}
                     </div>
-                    <h6 className="mb-0 fw-bold">
+                    <span className="fw-bold">
                       ₱
                       {(
                         Number(item.product.price) * item.quantity -
                         (item.discount || 0)
                       ).toFixed(2)}
-                    </h6>
+                    </span>
                   </div>
                 </div>
               ))}
@@ -338,7 +344,7 @@ const POS: React.FC = () => {
           )}
         </div>
 
-        <div className="p-3 border-top bg-white">
+        <div className="cart-footer">
           <div className="d-flex justify-content-between mb-2">
             <span className="text-muted">Subtotal:</span>
             <span>₱{subtotal.toFixed(2)}</span>
@@ -349,10 +355,10 @@ const POS: React.FC = () => {
           </div>
           <div className="d-flex justify-content-between mb-3">
             <span className="fw-bold">Total:</span>
-            <span className="fw-bold fs-5">₱{total.toFixed(2)}</span>
+            <span className="cart-total">₱{total.toFixed(2)}</span>
           </div>
           <button
-            className="btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center gap-2"
+            className="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2"
             disabled={items.length === 0}
             onClick={() => setShowPayment(true)}
           >
